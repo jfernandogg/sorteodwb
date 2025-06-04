@@ -8,95 +8,95 @@ body {
 
 @layer base {
   :root {
-    --background: 20 78% 87%; /* #F8D8C4 Soft, desaturated orange */
-    --foreground: 24 80% 20%; /* Darker orange for text */
+    --background: 0 0% 98%; /* Almost white */
+    --foreground: 0 0% 10%; /* Dark gray for text */
 
     --card: 0 0% 100%; /* White cards */
-    --card-foreground: 24 80% 20%; /* Dark orange text on cards */
+    --card-foreground: 0 0% 10%; /* Dark gray text on cards */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 24 80% 20%;
+    --popover-foreground: 0 0% 10%;
 
-    --primary: 24 90% 58%; /* #F47C35 Warm, inviting orange */
+    --primary: 0 75% 55%; /* #DB2727 - A strong red */
     --primary-foreground: 0 0% 100%; /* White */
 
-    --secondary: 20 75% 80%; /* Lighter shade of background for secondary elements */
-    --secondary-foreground: 24 80% 20%; /* Dark orange text for secondary */
+    --secondary: 20 90% 93%; /* #FDEFEA - Very light orange */
+    --secondary-foreground: 15 80% 25%; /* #7F3319 - Dark reddish-brown */
 
-    --muted: 20 70% 92%; /* Muted elements, slightly off-background */
-    --muted-foreground: 24 75% 35%; /* Muted text, less contrast */
+    --muted: 45 90% 95%; /* #FCFADE - Very light yellow */
+    --muted-foreground: 40 60% 40%; /* #997A3D - Muted brown-yellow */
 
-    --accent: 36 90% 58%; /* #F4A635 Complementary yellow-orange */
+    --accent: 30 95% 55%; /* #FC8C23 - Bright orange */
     --accent-foreground: 0 0% 100%; /* White */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%; /* Default ShadCN red */
+    --destructive-foreground: 0 0% 98%; /* Light text for destructive */
 
-    --border: 20 65% 80%; /* Border color, related to background */
-    --input: 20 65% 92%; /* Input background */
-    --ring: 36 90% 58%; /* Accent color for rings */
+    --border: 30 60% 90%; /* #F5E3D6 - Light orange-beige for borders */
+    --input: 45 80% 96%; /* #FDF9EE - Very light yellow for input backgrounds */
+    --ring: 35 90% 60%; /* #FBCB4D - Clear yellow for focus rings */
 
     --radius: 0.5rem;
 
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --chart-1: 0 76% 61%; /* Red */
+    --chart-2: 30 85% 58%; /* Orange */
+    --chart-3: 45 90% 58%; /* Yellow */
+    --chart-4: 10 70% 55%; /* Deeper Red-Orange */
+    --chart-5: 35 80% 60%; /* Golden Yellow */
     
-    --sidebar-background: 20 78% 85%; 
-    --sidebar-foreground: 24 80% 15%;
-    --sidebar-primary: 24 90% 58%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 36 90% 58%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 20 65% 75%;
-    --sidebar-ring: 36 90% 58%;
+    --sidebar-background: 0 0% 97%; /* Very light grey, almost white */
+    --sidebar-foreground: 0 0% 15%; /* Dark text */
+    --sidebar-primary: 0 75% 55%; /* Red */
+    --sidebar-primary-foreground: 0 0% 100%; /* White */
+    --sidebar-accent: 30 95% 55%; /* Orange */
+    --sidebar-accent-foreground: 0 0% 100%; /* White */
+    --sidebar-border: 0 0% 90%; /* Light grey border */
+    --sidebar-ring: 35 90% 60%; /* Yellow */
   }
 
   .dark {
-    --background: 24 80% 10%; /* Dark orange-brown */
-    --foreground: 20 70% 90%; /* Light desaturated orange */
+    --background: 20 15% 12%; /* #261E1B - Very dark, slightly warm brown-gray */
+    --foreground: 20 10% 88%; /* #E3DEDC - Light off-white/gray for text */
 
-    --card: 24 80% 15%; /* Darker card background */
-    --card-foreground: 20 70% 90%;
+    --card: 20 15% 15%; /* #2B2320 - Darker card background */
+    --card-foreground: 20 10% 88%;
 
-    --popover: 24 80% 15%;
-    --popover-foreground: 20 70% 90%;
+    --popover: 20 15% 15%;
+    --popover-foreground: 20 10% 88%;
 
-    --primary: 24 90% 58%; /* #F47C35 */
-    --primary-foreground: 0 0% 100%;
+    --primary: 0 70% 65%; /* #E86D6D - Softer red for dark mode */
+    --primary-foreground: 0 0% 100%; /* White text on primary */
 
-    --secondary: 24 80% 20%; 
-    --secondary-foreground: 20 70% 90%;
+    --secondary: 25 40% 30%; /* #663B29 - Muted dark orange */
+    --secondary-foreground: 25 80% 85%; /* #F2D8CC - Light orange-ish text */
 
-    --muted: 24 80% 25%;
-    --muted-foreground: 20 60% 70%;
+    --muted: 40 30% 25%; /* #594E36 - Dark muted yellow-brown */
+    --muted-foreground: 40 70% 75%; /* #D4CBA6 - Light muted yellow */
 
-    --accent: 36 90% 58%; /* #F4A635 */
-    --accent-foreground: 0 0% 100%;
+    --accent: 30 80% 65%; /* #F7A25F - Vibrant orange, adjusted for dark mode */
+    --accent-foreground: 0 0% 10%; /* Dark text for contrast on orange */
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 70% 55%; /* Adjusted destructive red for dark */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 24 80% 25%;
-    --input: 24 80% 22%;
-    --ring: 36 90% 58%;
+    --border: 25 20% 25%; /* #4D3F3A - Dark orange-brown border */
+    --input: 30 25% 22%; /* #473A33 - Dark input background */
+    --ring: 35 85% 65%; /* #FCCA6A - Bright yellow ring for dark mode */
     
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --chart-1: 0 70% 70%; /* Brighter Red */
+    --chart-2: 30 80% 68%; /* Brighter Orange */
+    --chart-3: 45 85% 65%; /* Brighter Yellow */
+    --chart-4: 10 65% 60%; /* Brighter Deeper Red-Orange */
+    --chart-5: 35 75% 68%; /* Brighter Golden Yellow */
 
-    --sidebar-background: 24 80% 12%;
-    --sidebar-foreground: 20 70% 88%;
-    --sidebar-primary: 24 90% 58%;
+    --sidebar-background: 20 15% 14%; /* Slightly different dark for sidebar */
+    --sidebar-foreground: 20 10% 86%;
+    --sidebar-primary: 0 70% 65%; /* Red */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 36 90% 58%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 24 80% 20%;
-    --sidebar-ring: 36 90% 58%;
+    --sidebar-accent: 30 80% 65%; /* Orange */
+    --sidebar-accent-foreground: 0 0% 10%; /* Dark text on accent */
+    --sidebar-border: 20 15% 20%;
+    --sidebar-ring: 35 85% 65%; /* Yellow */
   }
 }
 
