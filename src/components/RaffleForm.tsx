@@ -91,9 +91,7 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
 
     const result: SubmitRaffleResult = await submitRaffleTicket(
       values,
-      values.receipt.name,
-      values.receipt.type,
-      values.receipt.size
+      values.receipt
     );
 
     if (result.success) {
