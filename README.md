@@ -28,8 +28,10 @@ Algunas configuraciones importantes para la aplicación se encuentran en `src/co
 Para el funcionamiento completo del sistema (Cloud Functions o el endpoint de pago), se requieren las siguientes variables de entorno (configuradas en sus respectivos servicios):
 
 -   `PRECIO_POR_TICKET`: (Para Cloud Functions si necesita este valor) El precio de cada participación.
- -   `BOLD_API_KEY`: La clave API para interactuar con Bold Payments (usada por el endpoint `/api/crearLinkDePago`).
--   Otras variables necesarias para Google Drive API, Gmail API, y configuración de Firestore.
+-   `BOLD_API_KEY`: La clave API para interactuar con Bold Payments (usada por el endpoint `/api/crearLinkDePago`).
+-   `FIREBASE_SERVICE_ACCOUNT_KEY`: Credenciales JSON del servicio utilizado para Firestore y Google Drive.
+-   `GOOGLE_DRIVE_FOLDER_ID`: ID de la carpeta en Drive donde se guardarán los comprobantes.
+-   Otras variables necesarias para Gmail API u otros servicios.
 
 ## Flujo de la Aplicación
 
