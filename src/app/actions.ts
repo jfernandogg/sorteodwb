@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { firestore } from '@/lib/firebaseServer';
 import { drive } from '@/lib/googleDrive';
 import { Readable } from 'stream';
+import { sendMail } from '@/lib/nodemailer';
 // @ts-ignore - firebase-admin types may not be installed in all environments
 import type { FirebaseFirestore } from 'firebase-admin/firestore';
 
@@ -82,6 +83,21 @@ export async function submitRaffleTicket(
       createdAt: new Date(),
       clientIp,
     });
+
+    // Enviar correo de notificación al usuario
+    try {
+      const formHtml = Object.entries(plainData)
+        .map(([key, value]) => `<b>${key}:</b> ${value}<br>`) 
+        .join('');
+      await sendMail({
+        to: plainData.email,
+        subject: `¡Registro recibido! Ticket #${ticketNumber} - Rifa Solidaria Living Center Medellín`,
+        html: `<p>¡Gracias por participar en la rifa!</p><p>Tu número de ticket es: <b>${ticketNumber}</b></p><p>Datos registrados:</p>${formHtml}<p>Puedes ver tu comprobante <a href="${receiptUrl}">aquí</a>.</p>`,
+        text: `¡Gracias por participar en la rifa!\nTu número de ticket es: ${ticketNumber}\n\nDatos registrados:\n${Object.entries(plainData).map(([k,v])=>`${k}: ${v}`).join('\n')}\nComprobante: ${receiptUrl}`
+      });
+    } catch (mailErr) {
+      console.error('Error enviando correo de notificación:', mailErr);
+    }
 
     return {
       success: true,
