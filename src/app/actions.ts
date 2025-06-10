@@ -29,16 +29,19 @@ export async function submitRaffleTicket(
       return { success: false, message: 'Datos inválidos: ' + validatedData.error.flatten().fieldErrors };
     }
 
-    const headersList = headers() as any;
+    // const headersList = headers() as any;
+    const headersList = await headers();
     const clientIp = headersList.get('x-forwarded-for') || headersList.get('remote-addr');
 
     // Verificar duplicados por email y nombre del archivo
+    console.log('Consultando duplicados en raffleTickets...');
     const dup = await firestore
       .collection('raffleTickets')
       .where('email', '==', validatedData.data.email)
       .where('receiptName', '==', receipt.name)
       .limit(1)
       .get();
+      console.log('Resultado de consulta de duplicados:', dup);
     if (!dup.empty) {
       return { success: false, message: 'Ya existe una participación con este correo y nombre de comprobante.' };
     }
@@ -66,11 +69,13 @@ export async function submitRaffleTicket(
     const receiptUrl = driveRes.data.webViewLink || '';
 
     // Guardar datos en Firestore
+    // Excluir el campo 'receipt' si existe en validatedData.data
+    const { receipt: _omitReceipt, ...plainData } = validatedData.data;
     await firestore.collection('raffleTickets').add({
-      ...validatedData.data,
+      ...plainData,
       ticketNumber,
       receiptDriveId: driveRes.data.id,
-      receiptName: receipt.name,
+      receiptName: receipt.name, // Se guarda el nombre del archivo
       receiptMimeType: receipt.type,
       receiptSize: receipt.size,
       receiptUrl,
