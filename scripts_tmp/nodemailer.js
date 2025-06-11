@@ -41,10 +41,11 @@ exports.sendMail = sendMail;
 // src/lib/nodemailer.ts
 // @ts-ignore
 var nodemailer = require('nodemailer');
-var user = process.env.SMTP_USER;
-var pass = process.env.SMTP_PASS;
+var firebaseEnv_1 = require("./firebaseEnv");
+var user = (0, firebaseEnv_1.getEnv)('smtp.user');
+var pass = (0, firebaseEnv_1.getEnv)('smtp.pass');
 if (!user || !pass) {
-    throw new Error('Debes definir SMTP_USER y SMTP_PASS en tu .env.local');
+    throw new Error('Debes definir smtp.user y smtp.pass en las variables de entorno o en Firebase Functions config');
 }
 exports.transporter = nodemailer.createTransport({
     service: 'gmail',
