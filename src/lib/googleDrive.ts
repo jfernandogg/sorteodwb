@@ -1,11 +1,12 @@
 // @ts-ignore - googleapis types may not be installed in all environments
 import { google } from 'googleapis';
+import { getEnv } from './firebaseEnv';
 
-const credentials = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+const credentials = getEnv('fb_service_account')
+  ? JSON.parse(getEnv('fb_service_account') as string)
   : undefined;
 if (!credentials) {
-  throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY not set');
+  throw new Error('fb_service_account no está definido en las variables de entorno o en Firebase Functions config');
 }
 
 const auth = new google.auth.GoogleAuth({

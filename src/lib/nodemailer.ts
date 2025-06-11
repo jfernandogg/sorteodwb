@@ -1,12 +1,14 @@
 // src/lib/nodemailer.ts
 // @ts-ignore
 const nodemailer = require('nodemailer');
+import { getEnv } from './firebaseEnv';
 
-const user = process.env.SMTP_USER;
-const pass = process.env.SMTP_PASS;
+const user = getEnv('smtp.user');
+const pass = getEnv('smtp.pass');
+const serviceAccount = getEnv('fb_service_account');
 
 if (!user || !pass) {
-  throw new Error('Debes definir SMTP_USER y SMTP_PASS en tu .env.local');
+  throw new Error('Debes definir smtp.user y smtp.pass en las variables de entorno o en Firebase Functions config');
 }
 
 export const transporter = nodemailer.createTransport({
