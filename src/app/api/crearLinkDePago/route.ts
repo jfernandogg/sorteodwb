@@ -1,11 +1,12 @@
 import { NextRequest } from 'next/server';
+import { getEnv } from '@/lib/firebaseEnv';
 
 const API_URL = 'https://integrations.api.bold.co/online/link/v1';
 
 export async function GET(req: NextRequest) {
-  const apiKey = process.env.BOLD_API_KEY;
+  const apiKey = getEnv('bold.api_key');
   if (!apiKey) {
-    return new Response('BOLD_API_KEY not configured', { status: 500 });
+    return new Response('bold.api_key no configurado', { status: 500 });
   }
 
   const { searchParams } = new URL(req.url);
