@@ -1,71 +1,65 @@
 
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
+import { getEnv } from '@/lib/firebaseEnv';
 
-export async function GET(request: NextRequest) {
-  console.log('Solicitud GET recibida en /api/crearLinkDePago'); // Log añadido
-  const { searchParams } = new URL(request.url);
-  const monto = searchParams.get('monto');
+const API_URL = 'https://integrations.api.bold.co/online/link/v1';
+
+export async function GET(req: NextRequest) {
+  const apiKey = getEnv('bold.api_key');
+  if (!apiKey) {
+    return new Response('bold.api_key no configurado', { status: 500 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const montoParam = searchParams.get('monto');
   const descripcion = searchParams.get('descripcion');
 
-  if (!monto || !descripcion) {
-    console.error('Faltan parámetros monto o descripción.');
-    return NextResponse.json({ error: 'Faltan los parámetros monto o descripción.' }, { status: 400 });
+  if (!montoParam || !descripcion) {
+    return new Response('Parámetros requeridos: monto y descripcion', { status: 400 });
   }
 
-  // En un escenario real, aquí llamarías a la API de Bold Payments
-  // con tu BOLD_API_KEY para generar un link de pago real.
-  // Este es un ejemplo de cómo podrías hacerlo:
-  /*
-  const boldApiKey = process.env.BOLD_API_KEY;
-  if (!boldApiKey) {
-    console.error('BOLD_API_KEY no está configurada.');
-    return NextResponse.json({ error: 'Error de configuración del servidor.' }, { status: 500 });
+  const monto = parseInt(montoParam, 10);
+  if (isNaN(monto)) {
+    return new Response('Monto inválido', { status: 400 });
   }
+
+  const payload = {
+    amount_type: 'CLOSE',
+    amount: {
+      currency: 'COP',
+      total_amount: monto,
+      tip_amount: 0,
+    },
+    description: descripcion,
+  };
 
   try {
-    const boldResponse = await fetch('https://api.bold.co/v2/payment_links', { // URL de ejemplo, verificar la correcta
+    const resp = await fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${boldApiKey}`,
+        'Authorization': `x-api-key ${apiKey}`,
       },
-      body: JSON.stringify({
-        amount_in_cents: parseInt(monto) * 100, // Bold generalmente espera el monto en centavos
-        description: descripcion,
-        currency: 'COP',
-        // ... otros parámetros requeridos por Bold ...
-      }),
+      body: JSON.stringify(payload),
     });
 
-    if (!boldResponse.ok) {
-      const errorData = await boldResponse.json();
-      console.error('Error al crear link de pago con Bold:', errorData);
-      return NextResponse.json({ error: 'No se pudo generar el link de pago.', details: errorData }, { status: boldResponse.status });
+    if (!resp.ok) {
+      const text = await resp.text();
+      console.error('Bold API error:', resp.status, text);
+      return new Response(`Error al crear el link de pago con Bold: ${text}`, { status: resp.status });
     }
 
-    const paymentLinkData = await boldResponse.json();
-    const paymentUrl = paymentLinkData.data?.url; // Ajustar según la estructura de la respuesta de Bold
-
-    if (paymentUrl) {
-      return NextResponse.redirect(paymentUrl);
-    } else {
-      console.error('La respuesta de Bold no contenía una URL de pago:', paymentLinkData);
-      return NextResponse.json({ error: 'No se pudo obtener la URL de pago de Bold.' }, { status: 500 });
+    const data = await resp.json();
+    const url = data.payload?.url;
+    if (!url) {
+      console.error('Respuesta inválida de Bold, no se encontró la URL:', data);
+      return new Response('Respuesta inválida de Bold, no se encontró la URL de pago.', { status: 500 });
     }
+
+    return Response.redirect(url, 302);
 
   } catch (error) {
-    console.error('Error al conectar con Bold Payments:', error);
-    return NextResponse.json({ error: 'Error interno al procesar el pago.' }, { status: 500 });
+    console.error('Error en la solicitud a Bold API:', error);
+    return new Response('Error interno del servidor al conectar con Bold.', { status: 500 });
   }
-  */
-
-  // Por ahora, redirigimos a una URL de demostración/simulada de Bold.
-  // Deberás reemplazar esto con la lógica real de generación de enlace y redirección.
-  const mockPaymentId = `MOCK_${Date.now()}`;
-  const simulatedBoldPaymentUrl = `https://pagos.bold.co/checkout?order=${mockPaymentId}&amount=${monto}&description=${encodeURIComponent(descripcion)}&currency=COP`;
-  
-  console.log(`Simulando redirección a Bold: ${simulatedBoldPaymentUrl}`);
-  
-  return NextResponse.redirect(simulatedBoldPaymentUrl);
 }
-
