@@ -2,11 +2,13 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
+  console.log('Solicitud GET recibida en /api/crearLinkDePago'); // Log añadido
   const { searchParams } = new URL(request.url);
   const monto = searchParams.get('monto');
   const descripcion = searchParams.get('descripcion');
 
   if (!monto || !descripcion) {
+    console.error('Faltan parámetros monto o descripción.');
     return NextResponse.json({ error: 'Faltan los parámetros monto o descripción.' }, { status: 400 });
   }
 
@@ -66,3 +68,4 @@ export async function GET(request: NextRequest) {
   
   return NextResponse.redirect(simulatedBoldPaymentUrl);
 }
+
