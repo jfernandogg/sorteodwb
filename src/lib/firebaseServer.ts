@@ -1,6 +1,5 @@
-// @ts-ignore - firebase-admin types may not be installed in all environments
+import 'server-only';
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
-// @ts-ignore - firebase-admin types may not be installed in all environments
 import { getFirestore } from 'firebase-admin/firestore';
 
 let app;
