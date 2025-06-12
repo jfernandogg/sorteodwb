@@ -1,4 +1,5 @@
 import RafflePageClientContent from '@/components/RafflePageClientContent';
+import AppFooter from '@/components/AppFooter';
 import Image from 'next/image';
 
 export default function Home() {
@@ -15,11 +16,7 @@ export default function Home() {
         />
       </div>
       <RafflePageClientContent />
-      <footer className="w-full text-center p-4 mt-auto">
-        <p className="text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} Living Center Medellín. Todos los derechos reservados.
-        </p>
-      </footer>
+      <AppFooter />
     </main>
   );
 }
