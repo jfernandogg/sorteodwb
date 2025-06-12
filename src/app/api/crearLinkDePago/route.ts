@@ -5,12 +5,10 @@ import { getEnv } from '@/lib/firebaseEnv';
 const API_URL = 'https://integrations.api.bold.co/online/link/v1';
 
 export async function GET(req: NextRequest) {
-  const rawEnvVar = process.env.BOLD_API_KEY;
-  console.log(`[Bold API] Value directly from process.env.BOLD_API_KEY: "${rawEnvVar}"`);
+  // Directly access BOLD_API_KEY as it should be named in .env.local or server environment
+  const apiKey = getEnv('BOLD_API_KEY'); 
+  console.log(`[Bold API] Value directly from process.env.BOLD_API_KEY: "${process.env.BOLD_API_KEY}"`);
 
-  const apiKey = getEnv('bold.api_key'); // This will use process.env.BOLD_API_KEY
-
-  // Log a portion of the API key to help with debugging
   if (apiKey && apiKey.length > 8) {
     console.log(`[Bold API] Using API Key (from getEnv) starting with: ${apiKey.substring(0, 4)}... and ending with: ...${apiKey.substring(apiKey.length - 4)}`);
   } else if (apiKey) {
@@ -20,8 +18,8 @@ export async function GET(req: NextRequest) {
   }
 
   if (!apiKey) {
-    console.error("[Bold API] Critical: bold.api_key (via getEnv) was not found or is empty in environment variables.");
-    return new Response('bold.api_key no configurado o vacío en el servidor', { status: 500 });
+    console.error("[Bold API] Critical: BOLD_API_KEY (via getEnv) was not found or is empty in environment variables.");
+    return new Response('BOLD_API_KEY no configurado o vacío en el servidor', { status: 500 });
   }
 
   const { searchParams } = new URL(req.url);
@@ -58,14 +56,14 @@ export async function GET(req: NextRequest) {
       body: JSON.stringify(payload),
     });
 
-    const responseText = await resp.text(); // Get response text regardless of status
+    const responseText = await resp.text(); 
 
     if (!resp.ok) {
       console.error(`[Bold API] Error: Status ${resp.status}. Response: ${responseText}`);
       return new Response(`Error al crear el link de pago con Bold: ${responseText}`, { status: resp.status });
     }
 
-    const data = JSON.parse(responseText); // Parse text to JSON
+    const data = JSON.parse(responseText); 
     const url = data.payload?.url;
     if (!url) {
       console.error('[Bold API] Respuesta inválida de Bold, no se encontró la URL:', data);

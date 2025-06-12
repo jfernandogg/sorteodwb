@@ -1,22 +1,17 @@
 
-// Intentionally using 'use server' for Next.js API routes or Server Actions
-// if this file were to be imported by such components.
-// However, for API routes, it's often not strictly necessary for simple env var access.
-// 'use server'; 
+// src/lib/firebaseEnv.ts
 
 /**
- * Retrieves an environment variable.
- * Converts keys like 'namespace.key' to 'NAMESPACE_KEY' before lookup.
- * @param key The key of the environment variable (e.g., 'bold.api_key').
+ * Retrieves an environment variable directly from process.env.
+ * The calling code should ensure it requests the variable name
+ * exactly as it's defined in the environment (e.g., process.env.BOLD_API_KEY).
+ * @param key The exact key of the environment variable (e.g., 'BOLD_API_KEY').
  * @returns The value of the environment variable, or undefined if not found.
  */
 export function getEnv(key: string): string | undefined {
   if (typeof process === 'undefined' || !process.env) {
-    // This might happen in certain client-side contexts if not careful,
-    // but for API routes, process.env should be available.
     console.warn(`process.env is not available. Cannot get env var: ${key}`);
     return undefined;
   }
-  const envVarName = key.toUpperCase().replace(/\./g, '_');
-  return process.env[envVarName];
+  return process.env[key];
 }
