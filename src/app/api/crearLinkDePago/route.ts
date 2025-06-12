@@ -5,19 +5,22 @@ import { getEnv } from '@/lib/firebaseEnv';
 const API_URL = 'https://integrations.api.bold.co/online/link/v1';
 
 export async function GET(req: NextRequest) {
-  const apiKey = getEnv('bold.api_key');
+  const rawEnvVar = process.env.BOLD_API_KEY;
+  console.log(`[Bold API] Value directly from process.env.BOLD_API_KEY: "${rawEnvVar}"`);
+
+  const apiKey = getEnv('bold.api_key'); // This will use process.env.BOLD_API_KEY
 
   // Log a portion of the API key to help with debugging
   if (apiKey && apiKey.length > 8) {
-    console.log(`[Bold API] Using API Key starting with: ${apiKey.substring(0, 4)}... and ending with: ...${apiKey.substring(apiKey.length - 4)}`);
+    console.log(`[Bold API] Using API Key (from getEnv) starting with: ${apiKey.substring(0, 4)}... and ending with: ...${apiKey.substring(apiKey.length - 4)}`);
   } else if (apiKey) {
-    console.log("[Bold API] Using API Key (too short to mask fully):", apiKey);
+    console.log("[Bold API] Using API Key (from getEnv, too short to mask fully):", apiKey);
   } else {
-    console.log("[Bold API] API Key is undefined or null after calling getEnv('bold.api_key').");
+    console.log("[Bold API] API Key (from getEnv) is undefined or null.");
   }
 
   if (!apiKey) {
-    console.error("[Bold API] Critical: bold.api_key was not found or is empty in environment variables.");
+    console.error("[Bold API] Critical: bold.api_key (via getEnv) was not found or is empty in environment variables.");
     return new Response('bold.api_key no configurado o vacío en el servidor', { status: 500 });
   }
 
