@@ -1,12 +1,22 @@
 // @ts-ignore - googleapis types may not be installed in all environments
 import { google } from 'googleapis';
-import { getEnv } from './firebaseEnv';
+import { getEnv } from './firebaseEnv'; // Uses the simplified getEnv
 
-const credentials = getEnv('fb_service_account')
-  ? JSON.parse(getEnv('fb_service_account') as string)
-  : undefined;
+// Expects FB_SERVICE_ACCOUNT in .env.local or server environment
+const credentialsJson = getEnv('FB_SERVICE_ACCOUNT'); 
+
+let credentials;
+if (credentialsJson) {
+  try {
+    credentials = JSON.parse(credentialsJson);
+  } catch (e) {
+    console.error("Failed to parse FB_SERVICE_ACCOUNT JSON:", e);
+    throw new Error('FB_SERVICE_ACCOUNT no es un JSON válido.');
+  }
+}
+
 if (!credentials) {
-  throw new Error('fb_service_account no está definido en las variables de entorno o en Firebase Functions config');
+  throw new Error('FB_SERVICE_ACCOUNT no está definido en las variables de entorno.');
 }
 
 const auth = new google.auth.GoogleAuth({
