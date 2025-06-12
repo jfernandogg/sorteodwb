@@ -4,7 +4,7 @@ import type * as React from 'react';
 import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PRECIO_POR_TICKET, PAYMENT_PHP_ENDPOINT_BASE_URL } from '@/config';
+import { PRECIO_POR_TICKET, PAYMENT_ENDPOINT_BASE_URL } from '@/config';
 import { RaffleFormSchema, RaffleFormValues, PrePaymentFormSchema } from '@/schemas';
 import { submitRaffleTicket, type SubmitRaffleResult } from '@/app/actions';
 import { StarSelector } from '@/components/StarSelector';
@@ -56,7 +56,7 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
       const description = `Rifa Solidaria - ${values.stars} participaciones`;
       
       // Ensure base URL doesn't end with '?' or '&' before appending params
-      let paymentUrl = PAYMENT_PHP_ENDPOINT_BASE_URL;
+      let paymentUrl = PAYMENT_ENDPOINT_BASE_URL;
       if (paymentUrl.includes('?')) {
         paymentUrl += '&';
       } else {
@@ -91,9 +91,7 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
 
     const result: SubmitRaffleResult = await submitRaffleTicket(
       values,
-      values.receipt.name,
-      values.receipt.type,
-      values.receipt.size
+      values.receipt
     );
 
     if (result.success) {

@@ -1,7 +1,4 @@
-import type {NextConfig} from 'next';
-
-const nextConfig: NextConfig = {
-  /* config options here */
+const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -18,6 +15,11 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb', // Puedes ajustar el límite según lo que necesites
+    },
+  },
 };
 
-export default nextConfig;
+module.exports = nextConfig;

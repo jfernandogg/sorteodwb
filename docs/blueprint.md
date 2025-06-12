@@ -4,7 +4,7 @@
 
 - Formulario de Inscripción: Formulario de inscripción: Captura de datos personales (nombre, apellidos, email, teléfono) y selección de número de participaciones (1-9) mediante un selector visual.
 - Cálculo del Total: Cálculo automático del total a pagar (participaciones × PRECIO_POR_TICKET).
-- Integración de Pagos: Integración con Bold Payments: Redirección a Bold Payments mediante un endpoint PHP (crearLinkDePago) al pulsar el botón 'Pagar'.
+- Integración de Pagos: Integración con Bold Payments: Redirección a Bold Payments mediante un endpoint de Next.js (`/api/crearLinkDePago`) al pulsar el botón 'Pagar'.
 - Subida de Comprobante: Subida de comprobante de pago: Permite al usuario subir el comprobante en formato PDF/JPG/PNG tras completar el pago.
 - Validación de Duplicados: Validación de duplicados: Implementa una función que evita el registro de participaciones con el mismo email y comprobante ya subido.
 - Email de Confirmación: Confirmación por correo electrónico: Envía un email de confirmación al usuario con el resumen de su compra y un enlace al comprobante.
