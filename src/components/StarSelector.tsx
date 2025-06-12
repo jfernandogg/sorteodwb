@@ -5,7 +5,7 @@ import { Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface StarSelectorProps {
-  count: number;
+  count?: number;
   value: number;
   onChange: (value: number) => void;
   size?: number;
