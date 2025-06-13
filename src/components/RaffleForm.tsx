@@ -1,30 +1,35 @@
+
 "use client";
 
 import type * as React from 'react';
 import { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PRECIO_POR_TICKET, PAYMENT_PHP_ENDPOINT_BASE_URL } from '@/config';
-import { RaffleFormSchema, RaffleFormValues, PrePaymentFormSchema } from '@/schemas';
+import { RaffleFormSchema, RaffleFormValues } from '@/schemas';
 import { submitRaffleTicket, type SubmitRaffleResult } from '@/app/actions';
 import { StarSelector } from '@/components/StarSelector';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label } from '@/components/ui/label'; // ShadCN Label
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // ShadCN Select
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Loader2, AlertTriangle, CheckCircle2, Banknote, CreditCard } from 'lucide-react';
 
 interface RaffleFormProps {
   onSubmitSuccess: () => void;
 }
+
+type PaymentMethod = 'transfer' | 'card';
 
 export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
   const [selectedStars, setSelectedStars] = useState(1);
   const [totalCOP, setTotalCOP] = useState(selectedStars * PRECIO_POR_TICKET);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
   const { toast } = useToast();
 
   const form = useForm<RaffleFormValues>({
@@ -55,7 +60,6 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
       const amount = values.stars * PRECIO_POR_TICKET;
       const description = `Rifa Solidaria - ${values.stars} participaciones`;
       
-      // Ensure base URL doesn't end with '?' or '&' before appending params
       let paymentUrl = PAYMENT_PHP_ENDPOINT_BASE_URL;
       if (paymentUrl.includes('?')) {
         paymentUrl += '&';
@@ -67,7 +71,7 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
       window.open(paymentUrl, '_blank');
       toast({
         title: "Redireccionando a Pago",
-        description: "Se ha abierto una nueva pestaña para completar el pago. Sube tu comprobante al regresar.",
+        description: "Se ha abierto una nueva pestaña para completar el pago con Bold. Sube tu comprobante al regresar.",
         duration: 5000,
       });
     } else {
@@ -198,16 +202,59 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
             />
             
             <div className="text-center text-2xl font-bold p-4 bg-secondary/50 rounded-md">
-              Total: {totalCOP} COP
+              Total: {totalCOP.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })}
             </div>
 
-            <Button type="button" onClick={handlePagar} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" disabled={isPaying || isSubmitting}>
-              {isPaying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Pagar ({totalCOP} COP)
-            </Button>
+            <FormItem>
+              <FormLabel>Forma de Pago</FormLabel>
+              <Select onValueChange={(value: PaymentMethod) => setPaymentMethod(value)} defaultValue={paymentMethod}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una forma de pago" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="card">
+                    <div className="flex items-center">
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      Tarjeta de Crédito/PSE (Bold)
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="transfer">
+                    <div className="flex items-center">
+                      <Banknote className="mr-2 h-4 w-4" />
+                      Transferencia Bancolombia
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </FormItem>
+
+            {paymentMethod === 'card' && (
+              <Button type="button" onClick={handlePagar} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" disabled={isPaying || isSubmitting}>
+                {isPaying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2 h-4 w-4" />}
+                Pagar con Tarjeta/PSE ({totalCOP.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })})
+              </Button>
+            )}
+
+            {paymentMethod === 'transfer' && (
+              <div className="p-4 border rounded-md bg-blue-50 border-blue-200 text-blue-800">
+                <h4 className="font-semibold text-lg mb-2">Instrucciones para Transferencia Bancolombia:</h4>
+                <p className="text-sm">Por favor, realiza la transferencia por <strong>{totalCOP.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })}</strong> a la siguiente cuenta:</p>
+                <ul className="list-disc list-inside my-2 text-sm">
+                  <li><strong>Cuenta de Ahorros Bancolombia:</strong> [TU NÚMERO DE CUENTA AQUÍ]</li>
+                  <li><strong>Nombre del titular:</strong> [NOMBRE DEL TITULAR AQUÍ]</li>
+                  <li><strong>NIT/C.C.:</strong> [NIT/C.C. DEL TITULAR AQUÍ]</li>
+                  <li><strong>Concepto/Referencia:</strong> Rifa Living Center + Tu Nombre</li>
+                </ul>
+                <p className="text-sm mt-2">
+                  Una vez realizada la transferencia, guarda el comprobante y súbelo en el campo de abajo.
+                </p>
+              </div>
+            )}
             
             <p className="text-sm text-muted-foreground text-center">
-              Después de pagar, regresa a esta página y sube tu comprobante.
+              Después de pagar o transferir, regresa a esta página y sube tu comprobante.
             </p>
 
             <FormField
@@ -215,7 +262,7 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
               name="receipt"
               render={({ field: { onChange, value, ...rest } }) => (
                 <FormItem>
-                  <FormLabel>Comprobante de Pago (.jpg, .png, .pdf - Máx 5MB)</FormLabel>
+                  <FormLabel>Comprobante de Pago/Transferencia (.jpg, .png, .pdf - Máx 5MB)</FormLabel>
                   <FormControl>
                     <Input 
                       type="file" 
@@ -229,7 +276,7 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
               )}
             />
 
-            <Button type="submit" className="w-full" disabled={isSubmitting || isPaying}>
+            <Button type="submit" className="w-full" disabled={isSubmitting || (paymentMethod === 'card' && isPaying)}>
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Enviar Participación y Comprobante
             </Button>
