@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, AlertTriangle, Eye } from 'lucide-react';
-import { authenticateAndFetchEntries, type RaffleEntry } from './actions';
+import { authenticateAndFetchEntries, type ClientRaffleEntry } from './actions'; // Import ClientRaffleEntry
 import { format } from 'date-fns';
 import Link from 'next/link';
 
@@ -18,7 +18,7 @@ export default function AdminViewPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [entries, setEntries] = useState<RaffleEntry[]>([]);
+  const [entries, setEntries] = useState<ClientRaffleEntry[]>([]); // Use ClientRaffleEntry
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,8 +33,13 @@ export default function AdminViewPage() {
         setError(result.message || 'Error desconocido al autenticar.');
         setIsAuthenticated(false);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ocurrió un error.');
+    } catch (err: any) {
+      // Check if the error is due to non-serializable data from the server action
+      if (err.message && err.message.includes("Only plain objects")) {
+         setError("Error de serialización: Los datos recibidos del servidor no son válidos. " + err.message);
+      } else {
+        setError(err instanceof Error ? err.message : 'Ocurrió un error.');
+      }
       setIsAuthenticated(false);
     }
     setIsLoading(false);
@@ -145,3 +150,4 @@ export default function AdminViewPage() {
     </main>
   );
 }
+
