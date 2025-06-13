@@ -47,3 +47,4 @@ firestore-debug.log
 
 service-account.json
 firebasestup.sh
+scripts/set_prod_env_vars.sh
