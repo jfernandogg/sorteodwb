@@ -1,3 +1,4 @@
+
 "use server";
 
 import { RaffleFormValues, RaffleFormSchema } from '@/schemas';
@@ -87,13 +88,17 @@ export async function submitRaffleTicket(
     // Enviar correo de notificación al usuario
     try {
       const formHtml = Object.entries(plainData)
-        .map(([key, value]) => `<b>${key}:</b> ${value}<br>`) 
+        .map(([key, value]) => {
+          const label = key === 'stars' ? 'Participaciones Adquiridas' : key;
+          return `<b>${label.charAt(0).toUpperCase() + label.slice(1)}:</b> ${value}<br>`;
+        }) 
         .join('');
+
       await sendMail({
         to: plainData.email,
         subject: `¡Registro recibido! Ticket #${ticketNumber} - Rifa Solidaria Living Center Medellín`,
-        html: `<p>¡Gracias por participar en la rifa!</p><p>Tu número de ticket es: <b>${ticketNumber}</b></p><p>Datos registrados:</p>${formHtml}<p>Puedes ver tu comprobante <a href="${receiptUrl}">aquí</a>.</p>`,
-        text: `¡Gracias por participar en la rifa!\nTu número de ticket es: ${ticketNumber}\n\nDatos registrados:\n${Object.entries(plainData).map(([k,v])=>`${k}: ${v}`).join('\n')}\nComprobante: ${receiptUrl}`
+        html: `<p>¡Gracias por participar en la rifa!</p><p>Tu número único de registro es: <b>${ticketNumber}</b></p><p>Datos registrados:</p>${formHtml}<p>Puedes ver tu comprobante <a href="${receiptUrl}">aquí</a>.</p>`,
+        text: `¡Gracias por participar en la rifa!\nTu número único de registro es: ${ticketNumber}\n\nDatos registrados:\n${Object.entries(plainData).map(([k,v])=>`${k === 'stars' ? 'Participaciones Adquiridas' : k.charAt(0).toUpperCase() + k.slice(1)}: ${v}`).join('\n')}\nComprobante: ${receiptUrl}`
       });
     } catch (mailErr) {
       console.error('Error enviando correo de notificación:', mailErr);
