@@ -244,7 +244,7 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
                 <ul className="list-disc list-inside my-2 text-sm">
                   <li><strong>Cuenta de Ahorros Bancolombia:</strong> 69300000133</li>
                   <li><strong>Nombre del titular:</strong> Confesión Religiosa Budismo Camino del Diamante</li>
-                  <li><strong>NIT/C.C.:</strong> [NIT/C.C. DEL TITULAR AQUÍ]</li>
+                  <li><strong>NIT/C.C.:</strong> Nit: 901309999</li>
                   <li><strong>Concepto/Referencia:</strong> Rifa Living Center + Tu Nombre</li>
                 </ul>
                 <p className="text-sm mt-2">
