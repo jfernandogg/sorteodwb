@@ -242,8 +242,8 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
                 <h4 className="font-semibold text-lg mb-2">Instrucciones para Transferencia Bancolombia:</h4>
                 <p className="text-sm">Por favor, realiza la transferencia por <strong>{totalCOP.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })}</strong> a la siguiente cuenta:</p>
                 <ul className="list-disc list-inside my-2 text-sm">
-                  <li><strong>Cuenta de Ahorros Bancolombia:</strong> [TU NÚMERO DE CUENTA AQUÍ]</li>
-                  <li><strong>Nombre del titular:</strong> [NOMBRE DEL TITULAR AQUÍ]</li>
+                  <li><strong>Cuenta de Ahorros Bancolombia:</strong> 69300000133</li>
+                  <li><strong>Nombre del titular:</strong> Confesión Religiosa Budismo Camino del Diamante</li>
                   <li><strong>NIT/C.C.:</strong> [NIT/C.C. DEL TITULAR AQUÍ]</li>
                   <li><strong>Concepto/Referencia:</strong> Rifa Living Center + Tu Nombre</li>
                 </ul>
