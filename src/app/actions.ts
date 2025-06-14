@@ -83,6 +83,7 @@ export async function submitRaffleTicket(
       receiptUrl,
       createdAt: new Date(),
       clientIp,
+      pagoVerificado: false, // Initialize pagoVerificado status
     });
 
     // Enviar correo de notificación al usuario

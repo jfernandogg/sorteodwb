@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, AlertTriangle, Eye } from 'lucide-react';
-import { authenticateAndFetchEntries, type ClientRaffleEntry } from './actions'; // Import ClientRaffleEntry
+import { Checkbox } from "@/components/ui/checkbox"; // Import Checkbox
+import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { Loader2, AlertTriangle, Eye, CheckCircle2, RefreshCw } from 'lucide-react';
+import { authenticateAndFetchEntries, updatePagoVerificadoStatus, type ClientRaffleEntry } from './actions';
 import { format } from 'date-fns';
 import Link from 'next/link';
 
@@ -18,7 +20,10 @@ export default function AdminViewPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [entries, setEntries] = useState<ClientRaffleEntry[]>([]); // Use ClientRaffleEntry
+  const [entries, setEntries] = useState<ClientRaffleEntry[]>([]);
+  const [updatingStatus, setUpdatingStatus] = useState<Record<string, boolean>>({}); // For individual checkbox loading
+
+  const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +39,6 @@ export default function AdminViewPage() {
         setIsAuthenticated(false);
       }
     } catch (err: any) {
-      // Check if the error is due to non-serializable data from the server action
       if (err.message && err.message.includes("Only plain objects")) {
          setError("Error de serialización: Los datos recibidos del servidor no son válidos. " + err.message);
       } else {
@@ -44,6 +48,39 @@ export default function AdminViewPage() {
     }
     setIsLoading(false);
   };
+
+  const handlePagoVerificadoChange = async (entryId: string, newStatus: boolean) => {
+    setUpdatingStatus(prev => ({ ...prev, [entryId]: true }));
+    try {
+      const result = await updatePagoVerificadoStatus(entryId, newStatus);
+      if (result.success) {
+        setEntries(prevEntries => 
+          prevEntries.map(entry => 
+            entry.id === entryId ? { ...entry, pagoVerificado: newStatus } : entry
+          )
+        );
+        toast({
+          title: "Actualización Exitosa",
+          description: result.message || "Estado de pago verificado actualizado.",
+          action: <CheckCircle2 className="text-green-500" />,
+        });
+      } else {
+        toast({
+          title: "Error al Actualizar",
+          description: result.message || "No se pudo actualizar el estado.",
+          variant: "destructive",
+        });
+      }
+    } catch (err: any) {
+      toast({
+        title: "Error de Red",
+        description: err instanceof Error ? err.message : "Ocurrió un error de red.",
+        variant: "destructive",
+      });
+    }
+    setUpdatingStatus(prev => ({ ...prev, [entryId]: false }));
+  };
+
 
   if (!isAuthenticated) {
     return (
@@ -115,6 +152,7 @@ export default function AdminViewPage() {
                     <TableHead className="text-center">Particip.</TableHead>
                     <TableHead>Fecha Registro</TableHead>
                     <TableHead className="text-center">Comprobante</TableHead>
+                    <TableHead className="text-center w-[150px]">Pago Verificado</TableHead> 
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -139,6 +177,20 @@ export default function AdminViewPage() {
                           'N/A'
                         )}
                       </TableCell>
+                      <TableCell className="text-center">
+                        {updatingStatus[entry.id] ? (
+                          <RefreshCw className="h-5 w-5 animate-spin mx-auto text-primary" />
+                        ) : (
+                          <Checkbox
+                            id={`pagoVerificado-${entry.id}`}
+                            checked={!!entry.pagoVerificado}
+                            onCheckedChange={(checked) => {
+                              handlePagoVerificadoChange(entry.id, Boolean(checked));
+                            }}
+                            aria-label={`Marcar pago como verificado para ticket ${entry.ticketNumber}`}
+                          />
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -150,4 +202,3 @@ export default function AdminViewPage() {
     </main>
   );
 }
-

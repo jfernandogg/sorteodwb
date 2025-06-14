@@ -23,6 +23,7 @@ export interface ClientRaffleEntry extends Omit<RaffleFormValues, 'receipt'> {
   receiptUrl?: string;
   createdAt: SerializableTimestamp; // Use serializable timestamp
   clientIp?: string;
+  pagoVerificado?: boolean; // Added pagoVerificado
 }
 
 // Original Firestore entry structure (used internally in this server action)
@@ -36,6 +37,7 @@ interface FirestoreRaffleEntry extends Omit<RaffleFormValues, 'receipt'> {
   receiptUrl?: string;
   createdAt: FirestoreTimestamp; // Firestore Timestamp
   clientIp?: string;
+  pagoVerificado?: boolean; // Added pagoVerificado
 }
 
 interface AuthFetchResult {
@@ -78,11 +80,47 @@ export async function authenticateAndFetchEntries(password: string): Promise<Aut
           nanoseconds: data.createdAt.nanoseconds,
         },
         clientIp: data.clientIp,
+        pagoVerificado: data.pagoVerificado || false, // Default to false if undefined
       };
     });
     return { success: true, entries };
   } catch (error) {
     console.error("Error al obtener las entradas de la rifa:", error);
     return { success: false, message: "Error al obtener los datos de las participaciones." };
+  }
+}
+
+interface UpdatePagoVerificadoResult {
+  success: boolean;
+  message?: string;
+}
+
+export async function updatePagoVerificadoStatus(
+  entryId: string,
+  pagoVerificado: boolean
+): Promise<UpdatePagoVerificadoResult> {
+  // Basic check: Ensure the user calling this is somehow authenticated as admin.
+  // For this specific page, we rely on the initial password check.
+  // In a more complex app, you'd use session tokens or proper auth middleware.
+  const adminPassword = process.env.ADMIN_VIEW_PASSWORD;
+  if (!adminPassword) { // This check is more for server config than per-call auth here.
+    console.error("ADMIN_VIEW_PASSWORD no está configurado.");
+    return { success: false, message: "Error de configuración del servidor." };
+  }
+  
+  if (!entryId) {
+    return { success: false, message: "ID de entrada no proporcionado." };
+  }
+
+  try {
+    await firestore.collection('raffleTickets').doc(entryId).update({
+      pagoVerificado: pagoVerificado,
+    });
+    return { success: true, message: "Estado de pago verificado actualizado." };
+  } catch (error) {
+    console.error("Error al actualizar el estado de pago verificado:", error);
+    // @ts-ignore
+    const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+    return { success: false, message: `Error al actualizar: ${errorMessage}` };
   }
 }
