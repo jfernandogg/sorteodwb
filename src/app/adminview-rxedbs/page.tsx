@@ -2,7 +2,7 @@
 "use client";
 
 import type * as React from 'react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,10 +10,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, AlertTriangle, Eye, CheckCircle2, RefreshCw, Download, ListChecks } from 'lucide-react';
+import { Loader2, AlertTriangle, Eye, CheckCircle2, RefreshCw, Download, ListChecks, ChevronLeft, ChevronRight } from 'lucide-react';
 import { authenticateAndFetchEntries, updatePagoVerificadoStatus, type ClientRaffleEntry } from './actions';
 import { format } from 'date-fns';
 import Link from 'next/link';
+
+const ITEMS_PER_PAGE = 5;
 
 export default function AdminViewPage() {
   const [password, setPassword] = useState('');
@@ -22,6 +24,7 @@ export default function AdminViewPage() {
   const [error, setError] = useState<string | null>(null);
   const [entries, setEntries] = useState<ClientRaffleEntry[]>([]);
   const [updatingStatus, setUpdatingStatus] = useState<Record<string, boolean>>({});
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { toast } = useToast();
 
@@ -29,6 +32,7 @@ export default function AdminViewPage() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setCurrentPage(1); // Reset page on new login/data fetch
     try {
       const result = await authenticateAndFetchEntries(password);
       if (result.success && result.entries) {
@@ -147,6 +151,13 @@ export default function AdminViewPage() {
     generateCsv(entries, "todas_las_participaciones.csv");
   };
 
+  const paginatedEntries = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return entries.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [entries, currentPage]);
+
+  const totalPages = Math.max(1, Math.ceil(entries.length / ITEMS_PER_PAGE));
+
 
   if (!isAuthenticated) {
     return (
@@ -223,6 +234,7 @@ export default function AdminViewPage() {
               setPassword('');
               setEntries([]);
               setError(null);
+              setCurrentPage(1);
             }}
             className="w-full sm:w-auto"
           >
@@ -234,67 +246,93 @@ export default function AdminViewPage() {
       {entries.length === 0 ? (
         <p className="text-center text-muted-foreground">No hay participaciones registradas todavía.</p>
       ) : (
-        <Card className="shadow-lg">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[80px]">Ticket #</TableHead>
-                    <TableHead>Nombre Completo</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Teléfono</TableHead>
-                    <TableHead className="text-center">Particip.</TableHead>
-                    <TableHead>Fecha Registro</TableHead>
-                    <TableHead className="text-center">Comprobante</TableHead>
-                    <TableHead className="text-center w-[150px]">Pago Verificado</TableHead> 
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {entries.map((entry) => (
-                    <TableRow key={entry.id}>
-                      <TableCell className="font-medium">{entry.ticketNumber}</TableCell>
-                      <TableCell>{entry.nombre} {entry.apellidos}</TableCell>
-                      <TableCell>{entry.email}</TableCell>
-                      <TableCell>{entry.telefono}</TableCell>
-                      <TableCell className="text-center">{entry.stars}</TableCell>
-                      <TableCell>
-                        {entry.createdAt ? format(new Date(entry.createdAt.seconds * 1000 + entry.createdAt.nanoseconds / 1000000), 'dd/MM/yyyy HH:mm') : 'N/A'}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {entry.receiptUrl ? (
-                          <Button variant="link" asChild size="sm" className="p-0 h-auto">
-                            <Link href={entry.receiptUrl} target="_blank" rel="noopener noreferrer">
-                              Ver
-                            </Link>
-                          </Button>
-                        ) : (
-                          'N/A'
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {updatingStatus[entry.id] ? (
-                          <RefreshCw className="h-5 w-5 animate-spin mx-auto text-primary" />
-                        ) : (
-                          <Checkbox
-                            id={`pagoVerificado-${entry.id}`}
-                            checked={!!entry.pagoVerificado}
-                            onCheckedChange={(checked) => {
-                              handlePagoVerificadoChange(entry.id, Boolean(checked));
-                            }}
-                            aria-label={`Marcar pago como verificado para ticket ${entry.ticketNumber}`}
-                          />
-                        )}
-                      </TableCell>
+        <>
+          <Card className="shadow-lg">
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[80px]">Ticket #</TableHead>
+                      <TableHead>Nombre Completo</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Teléfono</TableHead>
+                      <TableHead className="text-center">Particip.</TableHead>
+                      <TableHead>Fecha Registro</TableHead>
+                      <TableHead className="text-center">Comprobante</TableHead>
+                      <TableHead className="text-center w-[150px]">Pago Verificado</TableHead> 
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedEntries.map((entry) => (
+                      <TableRow key={entry.id}>
+                        <TableCell className="font-medium">{entry.ticketNumber}</TableCell>
+                        <TableCell>{entry.nombre} {entry.apellidos}</TableCell>
+                        <TableCell>{entry.email}</TableCell>
+                        <TableCell>{entry.telefono}</TableCell>
+                        <TableCell className="text-center">{entry.stars}</TableCell>
+                        <TableCell>
+                          {entry.createdAt ? format(new Date(entry.createdAt.seconds * 1000 + entry.createdAt.nanoseconds / 1000000), 'dd/MM/yyyy HH:mm') : 'N/A'}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {entry.receiptUrl ? (
+                            <Button variant="link" asChild size="sm" className="p-0 h-auto">
+                              <Link href={entry.receiptUrl} target="_blank" rel="noopener noreferrer">
+                                Ver
+                              </Link>
+                            </Button>
+                          ) : (
+                            'N/A'
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {updatingStatus[entry.id] ? (
+                            <RefreshCw className="h-5 w-5 animate-spin mx-auto text-primary" />
+                          ) : (
+                            <Checkbox
+                              id={`pagoVerificado-${entry.id}`}
+                              checked={!!entry.pagoVerificado}
+                              onCheckedChange={(checked) => {
+                                handlePagoVerificadoChange(entry.id, Boolean(checked));
+                              }}
+                              aria-label={`Marcar pago como verificado para ticket ${entry.ticketNumber}`}
+                            />
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center space-x-2 mt-6">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                aria-label="Página anterior"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Página {currentPage} de {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                aria-label="Página siguiente"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </>
       )}
     </main>
   );
 }
-
