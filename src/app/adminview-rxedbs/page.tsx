@@ -8,9 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Checkbox } from "@/components/ui/checkbox"; // Import Checkbox
-import { useToast } from "@/hooks/use-toast"; // Import useToast
-import { Loader2, AlertTriangle, Eye, CheckCircle2, RefreshCw } from 'lucide-react';
+import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, AlertTriangle, Eye, CheckCircle2, RefreshCw, Download } from 'lucide-react';
 import { authenticateAndFetchEntries, updatePagoVerificadoStatus, type ClientRaffleEntry } from './actions';
 import { format } from 'date-fns';
 import Link from 'next/link';
@@ -21,7 +21,7 @@ export default function AdminViewPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [entries, setEntries] = useState<ClientRaffleEntry[]>([]);
-  const [updatingStatus, setUpdatingStatus] = useState<Record<string, boolean>>({}); // For individual checkbox loading
+  const [updatingStatus, setUpdatingStatus] = useState<Record<string, boolean>>({});
 
   const { toast } = useToast();
 
@@ -81,6 +81,64 @@ export default function AdminViewPage() {
     setUpdatingStatus(prev => ({ ...prev, [entryId]: false }));
   };
 
+  const escapeCsvCell = (cellData: string | number | undefined | null): string => {
+    if (cellData === undefined || cellData === null) {
+      return '';
+    }
+    const stringData = String(cellData);
+    // If the stringData contains a comma, a newline, or a double quote, then enclose it in double quotes.
+    // Also, any double quote inside the stringData must be escaped by a preceding double quote.
+    if (stringData.includes(',') || stringData.includes('\n') || stringData.includes('"')) {
+      return `"${stringData.replace(/"/g, '""')}"`;
+    }
+    return stringData;
+  };
+
+  const handleDownloadVerified = () => {
+    const verifiedEntries = entries.filter(entry => entry.pagoVerificado);
+    if (verifiedEntries.length === 0) {
+      toast({
+        title: "No hay datos",
+        description: "No hay participaciones verificadas para descargar.",
+        variant: "default",
+      });
+      return;
+    }
+
+    const headers = [
+      "Ticket #", "Nombre", "Apellidos", "Email", "Teléfono", 
+      "Participaciones", "Fecha Registro", "Comprobante URL", "IP Cliente"
+    ];
+    
+    const csvRows = [
+      headers.join(','),
+      ...verifiedEntries.map(entry => [
+        escapeCsvCell(entry.ticketNumber),
+        escapeCsvCell(entry.nombre),
+        escapeCsvCell(entry.apellidos),
+        escapeCsvCell(entry.email),
+        escapeCsvCell(entry.telefono),
+        escapeCsvCell(entry.stars),
+        escapeCsvCell(entry.createdAt ? format(new Date(entry.createdAt.seconds * 1000 + entry.createdAt.nanoseconds / 1000000), 'yyyy-MM-dd HH:mm:ss') : 'N/A'),
+        escapeCsvCell(entry.receiptUrl),
+        escapeCsvCell(entry.clientIp)
+      ].join(','))
+    ];
+    
+    const csvString = csvRows.join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", "participaciones_verificadas.csv");
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -124,16 +182,35 @@ export default function AdminViewPage() {
     );
   }
 
+  const verifiedCount = entries.filter(entry => entry.pagoVerificado).length;
+
   return (
     <main className="container mx-auto py-8 px-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-primary">Participaciones de la Rifa</h1>
-        <Button variant="outline" onClick={() => {
-          setIsAuthenticated(false);
-          setPassword('');
-          setEntries([]);
-          setError(null);
-        }}>Cerrar Sesión</Button>
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <h1 className="text-3xl font-bold text-primary text-center sm:text-left">Participaciones de la Rifa</h1>
+        <div className="flex flex-col sm:flex-row gap-2 items-center">
+          <Button 
+            variant="outline" 
+            onClick={handleDownloadVerified}
+            disabled={verifiedCount === 0}
+            className="w-full sm:w-auto"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Descargar Verificados ({verifiedCount})
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              setIsAuthenticated(false);
+              setPassword('');
+              setEntries([]);
+              setError(null);
+            }}
+            className="w-full sm:w-auto"
+          >
+            Cerrar Sesión
+          </Button>
+        </div>
       </div>
       
       {entries.length === 0 ? (
@@ -202,3 +279,4 @@ export default function AdminViewPage() {
     </main>
   );
 }
+
