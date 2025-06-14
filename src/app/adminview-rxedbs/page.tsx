@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, AlertTriangle, Eye, CheckCircle2, RefreshCw, Download } from 'lucide-react';
+import { Loader2, AlertTriangle, Eye, CheckCircle2, RefreshCw, Download, ListChecks } from 'lucide-react';
 import { authenticateAndFetchEntries, updatePagoVerificadoStatus, type ClientRaffleEntry } from './actions';
 import { format } from 'date-fns';
 import Link from 'next/link';
@@ -86,20 +86,17 @@ export default function AdminViewPage() {
       return '';
     }
     const stringData = String(cellData);
-    // If the stringData contains a comma, a newline, or a double quote, then enclose it in double quotes.
-    // Also, any double quote inside the stringData must be escaped by a preceding double quote.
     if (stringData.includes(',') || stringData.includes('\n') || stringData.includes('"')) {
       return `"${stringData.replace(/"/g, '""')}"`;
     }
     return stringData;
   };
 
-  const handleDownloadVerified = () => {
-    const verifiedEntries = entries.filter(entry => entry.pagoVerificado);
-    if (verifiedEntries.length === 0) {
+  const generateCsv = (dataToExport: ClientRaffleEntry[], filename: string) => {
+    if (dataToExport.length === 0) {
       toast({
         title: "No hay datos",
-        description: "No hay participaciones verificadas para descargar.",
+        description: `No hay participaciones para descargar en ${filename}.`,
         variant: "default",
       });
       return;
@@ -107,12 +104,12 @@ export default function AdminViewPage() {
 
     const headers = [
       "Ticket #", "Nombre", "Apellidos", "Email", "Teléfono", 
-      "Participaciones", "Fecha Registro", "Comprobante URL", "IP Cliente"
+      "Participaciones", "Fecha Registro", "Comprobante URL", "IP Cliente", "Pago Verificado"
     ];
     
     const csvRows = [
       headers.join(','),
-      ...verifiedEntries.map(entry => [
+      ...dataToExport.map(entry => [
         escapeCsvCell(entry.ticketNumber),
         escapeCsvCell(entry.nombre),
         escapeCsvCell(entry.apellidos),
@@ -121,17 +118,18 @@ export default function AdminViewPage() {
         escapeCsvCell(entry.stars),
         escapeCsvCell(entry.createdAt ? format(new Date(entry.createdAt.seconds * 1000 + entry.createdAt.nanoseconds / 1000000), 'yyyy-MM-dd HH:mm:ss') : 'N/A'),
         escapeCsvCell(entry.receiptUrl),
-        escapeCsvCell(entry.clientIp)
+        escapeCsvCell(entry.clientIp),
+        escapeCsvCell(entry.pagoVerificado ? 'Sí' : 'No') 
       ].join(','))
     ];
     
     const csvString = csvRows.join('\n');
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([`\uFEFF${csvString}`], { type: 'text/csv;charset=utf-8;' }); // FEFF for UTF-8 BOM
     const link = document.createElement("a");
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
-      link.setAttribute("download", "participaciones_verificadas.csv");
+      link.setAttribute("download", filename);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
@@ -139,6 +137,16 @@ export default function AdminViewPage() {
       URL.revokeObjectURL(url);
     }
   };
+
+  const handleDownloadVerified = () => {
+    const verifiedEntries = entries.filter(entry => entry.pagoVerificado);
+    generateCsv(verifiedEntries, "participaciones_verificadas.csv");
+  };
+
+  const handleDownloadAll = () => {
+    generateCsv(entries, "todas_las_participaciones.csv");
+  };
+
 
   if (!isAuthenticated) {
     return (
@@ -183,20 +191,30 @@ export default function AdminViewPage() {
   }
 
   const verifiedCount = entries.filter(entry => entry.pagoVerificado).length;
+  const totalCount = entries.length;
 
   return (
     <main className="container mx-auto py-8 px-4">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <h1 className="text-3xl font-bold text-primary text-center sm:text-left">Participaciones de la Rifa</h1>
-        <div className="flex flex-col sm:flex-row gap-2 items-center">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2 items-center justify-center sm:justify-end">
           <Button 
-            variant="outline" 
+            variant="secondary" 
             onClick={handleDownloadVerified}
             disabled={verifiedCount === 0}
             className="w-full sm:w-auto"
           >
-            <Download className="mr-2 h-4 w-4" />
+            <ListChecks className="mr-2 h-4 w-4" />
             Descargar Verificados ({verifiedCount})
+          </Button>
+          <Button 
+            variant="secondary" 
+            onClick={handleDownloadAll}
+            disabled={totalCount === 0}
+            className="w-full sm:w-auto"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Descargar Todos ({totalCount})
           </Button>
           <Button 
             variant="outline" 
