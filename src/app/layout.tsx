@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
@@ -22,12 +23,14 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col" suppressHydrationWarning={true}>
         <header className="w-full">
+          {/* Asumiendo que la imagen SVG está en public/banner.svg */}
+          {/* Las dimensiones 680x75 son para la relación de aspecto, el SVG escalará */}
           <Image
-            src="/banner.png"
+            src="/banner.svg" 
             alt="Rifa Solidaria Living Center Banner"
             width={680} 
             height={75} 
-            className="w-full h-auto object-cover"
+            className="w-full h-auto object-cover" // w-full hace que ocupe el ancho, h-auto mantiene la proporción
             priority
           />
         </header>
