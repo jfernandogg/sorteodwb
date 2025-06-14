@@ -5,6 +5,11 @@ import Image from 'next/image';
 export default function Home() {
   return (
     <main className="flex flex-col items-center justify-center flex-grow p-4 sm:p-8 md:p-12">
+      {/* Title Added Here */}
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary text-center mb-6 sm:mb-8">
+        Participa para Ganar una Estadía en el Living Center Medellin por 7 días !!!
+      </h1>
+      
       <div className="mb-8 text-center"> {/* Container for image and new text */}
         <Image 
             src="https://placehold.co/300x150.png" 
@@ -17,7 +22,8 @@ export default function Home() {
         {/* Explanatory Text Block */}
         <div className="mt-6 max-w-xl mx-auto text-center">
           <p className="text-base md:text-lg text-foreground mb-4">
-            ¿Cómo puedes unirte? Estaremos rifando 5 días sucesivos de estadía en nuestro nuevo Living Center Medellín en habitación con baño privado <span className="text-primary font-semibold">♧</span>
+            {/* Changed "5 días" to "7 días" here */}
+            ¿Cómo puedes unirte? Estaremos rifando 7 días sucesivos de estadía en nuestro nuevo Living Center Medellín en habitación con baño privado <span className="text-primary font-semibold">♧</span>
           </p>
           <p className="text-sm md:text-base text-muted-foreground mb-6">
             Te invitamos a pasar unos días en la ciudad de la eterna primavera para meditar, compartir con nuestra Sangha y por supuesto, comer juntos <span role="img" aria-label="food party meditation emojis">😄🍽💃🕺🧘‍♀🧘🏻🏠</span>. 
