@@ -40,7 +40,7 @@ next-env.d.ts
 .genkit/*
 .env*
 .env.local
-
+*.cache
 # firebase
 firebase-debug.log
 firestore-debug.log
