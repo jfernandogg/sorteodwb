@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, PlayCircle, Trophy, Users, AlertTriangle, SmilePlus, UserCheck, ListChecks } from 'lucide-react';
+import { Loader2, PlayCircle, Trophy, AlertTriangle, SmilePlus, UserCheck, ListChecks } from 'lucide-react';
 import { fetchVerifiedParticipantsForSorteo, type VerifiedParticipant } from './actions';
 import AppFooter from '@/components/AppFooter';
 
@@ -56,7 +56,7 @@ export default function SorteoPage() {
           });
           const shuffledNames = shuffleArray(names);
           setExpandedNameList(shuffledNames);
-          setCurrentDisplayName(shuffledNames[0] || "¡Listo!");
+          setCurrentDisplayName("..."); // <-- Cambiado aquí: Mostrar placeholder en lugar del primer nombre
           setUniqueParticipantCount(uniqueNames.size);
         }
       } else {
