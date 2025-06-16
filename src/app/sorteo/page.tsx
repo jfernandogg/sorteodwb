@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, PlayCircle, Trophy, Users, AlertTriangle, SmilePlus } from 'lucide-react';
+import { Loader2, PlayCircle, Trophy, Users, AlertTriangle, SmilePlus, UserCheck, ListChecks } from 'lucide-react';
 import { fetchVerifiedParticipantsForSorteo, type VerifiedParticipant } from './actions';
 import AppFooter from '@/components/AppFooter';
 
@@ -22,15 +22,14 @@ function shuffleArray<T>(array: T[]): T[] {
 
 export default function SorteoPage() {
   const [expandedNameList, setExpandedNameList] = useState<string[]>([]);
-  // currentDisplayIndex is not directly used for display, but for logic inside spin
-  // const [currentDisplayIndex, setCurrentDisplayIndex] = useState(0); 
   const [currentDisplayName, setCurrentDisplayName] = useState("...");
   const [isSpinning, setIsSpinning] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [uniqueParticipantCount, setUniqueParticipantCount] = useState(0);
 
-  const intervalIdRef = useRef<NodeJS.Timeout | null>(null); // Kept if other interval logic is added later
+  const intervalIdRef = useRef<NodeJS.Timeout | null>(null); 
   const animationFrameIdRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -43,10 +42,14 @@ export default function SorteoPage() {
           setError("No hay participantes verificados para realizar el sorteo.");
           setExpandedNameList([]);
           setCurrentDisplayName("N/A");
+          setUniqueParticipantCount(0);
         } else {
           const names: string[] = [];
+          const uniqueNames = new Set<string>();
+
           result.participants.forEach(p => {
             const fullName = `${p.nombre} ${p.apellidos}`;
+            uniqueNames.add(fullName); // Track unique full names
             for (let i = 0; i < p.stars; i++) {
               names.push(fullName);
             }
@@ -54,10 +57,12 @@ export default function SorteoPage() {
           const shuffledNames = shuffleArray(names);
           setExpandedNameList(shuffledNames);
           setCurrentDisplayName(shuffledNames[0] || "¡Listo!");
+          setUniqueParticipantCount(uniqueNames.size);
         }
       } else {
         setError(result.message || "Error cargando participantes.");
         setCurrentDisplayName("Error");
+        setUniqueParticipantCount(0);
       }
       setIsLoading(false);
     }
@@ -69,15 +74,15 @@ export default function SorteoPage() {
     };
   }, []);
 
-  const spinDurationBase = 3000; // 3 seconds base
-  const spinDurationRandom = 2000; // up to 2 additional random seconds
+  const spinDurationBase = 3000; 
+  const spinDurationRandom = 2000; 
 
   const handleSpin = () => {
     if (isSpinning || expandedNameList.length === 0) return;
 
     setIsSpinning(true);
     setWinner(null);
-    setCurrentDisplayName("Girando..."); // Set to "Girando..." immediately
+    setCurrentDisplayName("Girando..."); 
 
     let currentIndex = 0;
     const startTime = Date.now();
@@ -99,14 +104,12 @@ export default function SorteoPage() {
       }
     }
     
-    // Give a brief moment for "Girando..." to render before starting the fast animation.
-    // Also, cancel any pre-existing animation frame.
     if (animationFrameIdRef.current) {
       cancelAnimationFrame(animationFrameIdRef.current);
     }
     setTimeout(() => {
         animationFrameIdRef.current = requestAnimationFrame(animate);
-    }, 50); // 50ms delay, adjust as needed
+    }, 50); 
   };
 
 
@@ -175,9 +178,15 @@ export default function SorteoPage() {
           )}
           
           {!error && !isLoading && expandedNameList.length > 0 && (
-            <div className="pt-4 text-sm text-muted-foreground">
-              <Users className="inline mr-2 h-5 w-5" />
-              Total de participaciones en el sorteo: {expandedNameList.length}
+            <div className="pt-4 space-y-2 text-sm text-muted-foreground">
+              <div className="flex items-center justify-center">
+                <UserCheck className="inline mr-2 h-5 w-5" />
+                Total de participantes únicos: {uniqueParticipantCount}
+              </div>
+              <div className="flex items-center justify-center">
+                <ListChecks className="inline mr-2 h-5 w-5" />
+                Total de participaciones en el sorteo: {expandedNameList.length}
+              </div>
             </div>
           )}
         </CardContent>
@@ -186,3 +195,4 @@ export default function SorteoPage() {
     </main>
   );
 }
+
