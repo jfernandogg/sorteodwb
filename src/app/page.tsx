@@ -1,3 +1,4 @@
+
 import RafflePageClientContent from '@/components/RafflePageClientContent';
 import AppFooter from '@/components/AppFooter';
 import Image from 'next/image';
@@ -16,22 +17,27 @@ export default function Home() {
             alt="Living Center Medellín Rifa" 
             width={300} 
             height={150}
-            data-ai-hint="spiritual center logo"
+            data-ai-hint="spiritual center dining room"
             className="mx-auto rounded-lg shadow-md"
         />
-        {/* Explanatory Text Block */}
+        {/* Explanatory Text Block Updated */}
         <div className="mt-6 max-w-xl mx-auto text-center">
+          <p className="text-lg md:text-xl text-foreground mb-4">
+            <strong>¡Ayúdanos a amoblar nuestro nuevo Living Center Medellín y participa por una estadía increíble!</strong>
+          </p>
           <p className="text-base md:text-lg text-foreground mb-4">
-            {/* Changed "5 días" to "7 días" here */}
-            ¿Cómo puedes unirte? Estaremos rifando 7 días sucesivos de estadía en nuestro nuevo Living Center Medellín en habitación con baño privado <span className="text-primary font-semibold">♧</span>
+            Con tu valiosa participación en esta rifa solidaria, podremos adquirir el <strong>comedor</strong> para nuestro centro. Este será un espacio vital para compartir alimentos, enseñanzas y momentos preciosos con nuestra Sangha.
+          </p>
+          <p className="text-base md:text-lg text-foreground mb-6">
+            Como agradecimiento, sortearemos una estadía de <strong>7 días consecutivos</strong> en nuestro flamante Living Center Medellín, en una cómoda habitación con baño privado <span className="text-primary font-semibold">♧</span>.
           </p>
           <p className="text-sm md:text-base text-muted-foreground mb-6">
-            Te invitamos a pasar unos días en la ciudad de la eterna primavera para meditar, compartir con nuestra Sangha y por supuesto, comer juntos <span role="img" aria-label="food party meditation emojis">😄🍽💃🕺🧘‍♀🧘🏻🏠</span>. 
+            Te invitamos a vivir la experiencia de la eterna primavera, meditar, y conectar con la comunidad en este espacio que estamos construyendo juntos <span role="img" aria-label="celebration food community meditation emojis">🎉🍽️🤝🧘‍♀🧘🏻🏠</span>.
           </p>
           <div className="text-xs text-muted-foreground/80 border-t border-border pt-4 mt-6">
-            <p className="mb-1"><span className="text-primary font-semibold">♧</span> Válido para el 2025.</p>
-            <p className="mb-1">Si los días escogidos coinciden con curso, no podremos garantizar habitación privada.</p>
-            <p>No incluye alimentación.</p>
+            <p className="mb-1"><span className="text-primary font-semibold">♧</span> Estadía válida durante todo el año 2025.</p>
+            <p className="mb-1"><span className="text-primary font-semibold">♧</span> Si los días escogidos coinciden con un curso programado, es posible que la habitación privada no esté garantizada (se ofrecerá la mejor alternativa disponible).</p>
+            <p><span className="text-primary font-semibold">♧</span> La estadía no incluye alimentación.</p>
           </div>
         </div>
       </div>
