@@ -22,14 +22,15 @@ function shuffleArray<T>(array: T[]): T[] {
 
 export default function SorteoPage() {
   const [expandedNameList, setExpandedNameList] = useState<string[]>([]);
-  const [currentDisplayIndex, setCurrentDisplayIndex] = useState(0);
+  // currentDisplayIndex is not directly used for display, but for logic inside spin
+  // const [currentDisplayIndex, setCurrentDisplayIndex] = useState(0); 
   const [currentDisplayName, setCurrentDisplayName] = useState("...");
   const [isSpinning, setIsSpinning] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalIdRef = useRef<NodeJS.Timeout | null>(null); // Kept if other interval logic is added later
   const animationFrameIdRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -68,7 +69,6 @@ export default function SorteoPage() {
     };
   }, []);
 
-  const spinSpeed = 70; // milliseconds per name change
   const spinDurationBase = 3000; // 3 seconds base
   const spinDurationRandom = 2000; // up to 2 additional random seconds
 
@@ -77,9 +77,7 @@ export default function SorteoPage() {
 
     setIsSpinning(true);
     setWinner(null);
-    
-    // Ensure the list is re-shuffled before each spin for more visual variety if desired
-    // setExpandedNameList(prevList => shuffleArray(prevList));
+    setCurrentDisplayName("Girando..."); // Set to "Girando..." immediately
 
     let currentIndex = 0;
     const startTime = Date.now();
@@ -100,7 +98,15 @@ export default function SorteoPage() {
         setIsSpinning(false);
       }
     }
-    animationFrameIdRef.current = requestAnimationFrame(animate);
+    
+    // Give a brief moment for "Girando..." to render before starting the fast animation.
+    // Also, cancel any pre-existing animation frame.
+    if (animationFrameIdRef.current) {
+      cancelAnimationFrame(animationFrameIdRef.current);
+    }
+    setTimeout(() => {
+        animationFrameIdRef.current = requestAnimationFrame(animate);
+    }, 50); // 50ms delay, adjust as needed
   };
 
 
