@@ -19,6 +19,7 @@ export default function Home() {
             className="w-full h-full object-contain"
             preload="metadata" // Helps load video dimensions and first frame quicker
             playsInline // Important for iOS to play inline
+            data-ai-hint="meditation retreat center"
           >
             Tu navegador no soporta la etiqueta de video.
           </video>
@@ -32,7 +33,7 @@ export default function Home() {
             Con tu valiosa participación en esta rifa solidaria, podremos adquirir el <strong>comedor</strong> para nuestro centro. Este será un espacio vital para compartir alimentos, enseñanzas y momentos preciosos con nuestra Sangha.
           </p>
           <p className="text-base md:text-lg text-foreground mb-6">
-            Como agradecimiento, sortearemos una estadía de <strong>7 días consecutivos</strong> en nuestro flamante Living Center Medellín, en una cómoda habitación con baño privado <span className="text-primary font-semibold">♧</span>.
+            Como agradecimiento, sortearemos una estadía de <strong>7 días consecutivos</strong> en nuestro flamante Living Center Medellín, en una cómoda habitación con baño privado y escritorio <span className="text-primary font-semibold">♧</span>.
           </p>
           <p className="text-sm md:text-base text-muted-foreground mb-6">
             Te invitamos a vivir la experiencia de la eterna primavera, meditar, y conectar con la comunidad en este espacio que estamos construyendo juntos <span role="img" aria-label="celebration food community meditation emojis">🎉🍽️🤝🧘‍♀️🧘‍♂️🏠</span>.
