@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label'; // ShadCN Label
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // ShadCN Select
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, AlertTriangle, CheckCircle2, Banknote, CreditCard, UploadCloud } from 'lucide-react';
@@ -189,6 +189,9 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Número de Participaciones (1-9)</FormLabel>
+                  <FormDescription className="text-center px-4">
+                    Cada vez que compras una participación, tu nombre se añade a la ruleta. Cuantas más veces compres, más veces apareces, y más posibilidades tienes de ganar.
+                  </FormDescription>
                   <FormControl>
                     <StarSelector
                       value={field.value}
@@ -304,3 +307,4 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
   );
 }
 
+    
