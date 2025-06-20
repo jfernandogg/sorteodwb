@@ -6,9 +6,10 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, PlayCircle, Trophy, AlertTriangle, SmilePlus, UserCheck, ListChecks } from 'lucide-react';
+import { Loader2, PlayCircle, Trophy, AlertTriangle, SmilePlus, UserCheck, ListChecks, Eye, EyeOff } from 'lucide-react';
 import { fetchVerifiedParticipantsForSorteo, type VerifiedParticipant } from './actions';
 import AppFooter from '@/components/AppFooter';
+import { ScrollArea } from '@/components/ui/scroll-area'; // Import ScrollArea
 
 // Helper function to shuffle an array
 function shuffleArray<T>(array: T[]): T[] {
@@ -28,6 +29,7 @@ export default function SorteoPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uniqueParticipantCount, setUniqueParticipantCount] = useState(0);
+  const [showParticipantList, setShowParticipantList] = useState(false); // New state
 
   const intervalIdRef = useRef<NodeJS.Timeout | null>(null); 
   const animationFrameIdRef = useRef<number | null>(null);
@@ -56,7 +58,7 @@ export default function SorteoPage() {
           });
           const shuffledNames = shuffleArray(names);
           setExpandedNameList(shuffledNames);
-          setCurrentDisplayName("..."); // <-- Cambiado aquí: Mostrar placeholder en lugar del primer nombre
+          setCurrentDisplayName("..."); 
           setUniqueParticipantCount(uniqueNames.size);
         }
       } else {
@@ -187,7 +189,37 @@ export default function SorteoPage() {
                 <ListChecks className="inline mr-2 h-5 w-5" />
                 Total de participaciones en el sorteo: {expandedNameList.length}
               </div>
+              <div className="mt-4 text-center">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setShowParticipantList(!showParticipantList)}
+                >
+                  {showParticipantList ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
+                  {showParticipantList ? 'Ocultar Lista de Participantes' : 'Ver Lista de Participantes del Sorteo'}
+                </Button>
+              </div>
             </div>
+          )}
+
+          {showParticipantList && expandedNameList.length > 0 && (
+            <Card className="mt-6 text-left">
+              <CardHeader>
+                <CardTitle className="text-lg">Lista Completa de Participaciones para el Sorteo</CardTitle>
+                <CardDescription>Cada nombre aparece según el número de participaciones compradas.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-60 w-full rounded-md border p-2">
+                  <div className="p-2">
+                    {expandedNameList.map((name, index) => (
+                      <div key={index} className="text-sm py-0.5">
+                        {index + 1}. {name}
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
           )}
         </CardContent>
       </Card>
@@ -195,4 +227,3 @@ export default function SorteoPage() {
     </main>
   );
 }
-
