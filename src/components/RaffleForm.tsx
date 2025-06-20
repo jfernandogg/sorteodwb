@@ -280,7 +280,7 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
                       accept=".jpg,.jpeg,.png,.pdf"
                       onChange={(e) => onChange(e.target.files ? e.target.files[0] : null)}
                       {...rest} 
-                      className="border-input hover:border-primary focus-visible:ring-primary" // Estilo sutil al input
+                      className="border-border shadow-sm hover:border-primary focus-visible:ring-primary"
                     />
                   </FormControl>
                   <FormMessage />
@@ -303,3 +303,4 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
     </Card>
   );
 }
+
