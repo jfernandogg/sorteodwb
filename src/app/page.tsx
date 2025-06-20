@@ -1,7 +1,7 @@
 
 import RafflePageClientContent from '@/components/RafflePageClientContent';
 import AppFooter from '@/components/AppFooter';
-import Image from 'next/image';
+// Removed Image from 'next/image' as it's not used for the video directly here
 
 export default function Home() {
   return (
@@ -11,15 +11,18 @@ export default function Home() {
         Participa para Ganar una Estadía en el Living Center Medellin por 7 días !!!
       </h1>
       
-      <div className="mb-8 text-center"> {/* Container for image and new text */}
-        <Image 
-            src="https://placehold.co/300x150.png" 
-            alt="Living Center Medellín Rifa" 
-            width={300} 
-            height={150}
-            data-ai-hint="spiritual center dining room"
-            className="mx-auto rounded-lg shadow-md"
-        />
+      <div className="mb-8 text-center w-full max-w-2xl"> {/* Container for video and new text */}
+        <div className="aspect-video w-full rounded-lg shadow-md overflow-hidden bg-black">
+          <video
+            src="/Videolivingcenter.mp4"
+            controls
+            className="w-full h-full object-contain"
+            preload="metadata" // Helps load video dimensions and first frame quicker
+            playsInline // Important for iOS to play inline
+          >
+            Tu navegador no soporta la etiqueta de video.
+          </video>
+        </div>
         {/* Explanatory Text Block Updated */}
         <div className="mt-6 max-w-xl mx-auto text-center">
           <p className="text-lg md:text-xl text-foreground mb-4">
@@ -32,7 +35,7 @@ export default function Home() {
             Como agradecimiento, sortearemos una estadía de <strong>7 días consecutivos</strong> en nuestro flamante Living Center Medellín, en una cómoda habitación con baño privado <span className="text-primary font-semibold">♧</span>.
           </p>
           <p className="text-sm md:text-base text-muted-foreground mb-6">
-            Te invitamos a vivir la experiencia de la eterna primavera, meditar, y conectar con la comunidad en este espacio que estamos construyendo juntos <span role="img" aria-label="celebration food community meditation emojis">🎉🍽️🤝🧘‍♀🧘🏻🏠</span>.
+            Te invitamos a vivir la experiencia de la eterna primavera, meditar, y conectar con la comunidad en este espacio que estamos construyendo juntos <span role="img" aria-label="celebration food community meditation emojis">🎉🍽️🤝🧘‍♀️🧘‍♂️🏠</span>.
           </p>
           <div className="text-xs text-muted-foreground/80 border-t border-border pt-4 mt-6">
             <p className="mb-1"><span className="text-primary font-semibold">♧</span> Estadía válida durante todo el año 2025.</p>
