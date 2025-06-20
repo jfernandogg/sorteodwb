@@ -36,7 +36,7 @@ export default function Home() {
             Como agradecimiento, sortearemos una estadía de <strong>7 días consecutivos</strong> en nuestro flamante Living Center Medellín, en una cómoda habitación con baño privado y escritorio <span className="text-primary font-semibold">♧</span>.
           </p>
           <p className="text-sm md:text-base text-muted-foreground mb-6">
-            Te invitamos a vivir la experiencia de la eterna primavera, meditar, y conectar con la comunidad en este espacio que estamos construyendo juntos <span role="img" aria-label="celebration food community meditation emojis">🎉🍽️🤝🧘‍♀️🧘‍♂️🏠</span>.
+            Te invitamos a vivir la experiencia de la eterna primavera, meditar, y conectar con los amigos de la Sangha local en este espacio que estamos construyendo juntos <span role="img" aria-label="celebration food community meditation emojis">🎉🍽️🤝🧘‍♀️🧘‍♂️🏠</span>.
           </p>
           <div className="text-xs text-muted-foreground/80 border-t border-border pt-4 mt-6">
             <p className="mb-1"><span className="text-primary font-semibold">♧</span> Estadía válida durante todo el año 2025.</p>
