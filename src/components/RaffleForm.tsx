@@ -16,7 +16,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // ShadCN Select
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, AlertTriangle, CheckCircle2, Banknote, CreditCard } from 'lucide-react';
+import { Loader2, AlertTriangle, CheckCircle2, Banknote, CreditCard, UploadCloud } from 'lucide-react';
 
 interface RaffleFormProps {
   onSubmitSuccess: () => void;
@@ -257,18 +257,30 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
               Después de pagar o transferir, regresa a esta página y sube tu comprobante.
             </p>
 
+            {/* Bloque de énfasis para la subida del comprobante */}
+            <div className="mt-4 p-4 border-2 border-dashed border-primary rounded-lg bg-primary/10 text-center">
+              <UploadCloud className="h-10 w-10 text-primary mx-auto mb-2" />
+              <p className="text-lg font-semibold text-primary mb-1">
+                ¡Último Paso! Sube tu Comprobante Aquí
+              </p>
+              <p className="text-sm text-foreground">
+                Adjunta el archivo (JPG, PNG, PDF - Máx 5MB) de tu pago o transferencia para completar tu participación.
+              </p>
+            </div>
+
             <FormField
               control={form.control}
               name="receipt"
               render={({ field: { onChange, value, ...rest } }) => (
-                <FormItem>
-                  <FormLabel>Comprobante de Pago/Transferencia (.jpg, .png, .pdf - Máx 5MB)</FormLabel>
+                <FormItem className="mt-2"> {/* Ajuste de margen superior para acercarlo al bloque de énfasis */}
+                  <FormLabel className="sr-only">Comprobante de Pago/Transferencia</FormLabel> {/* La label principal está en el bloque de arriba */}
                   <FormControl>
                     <Input 
                       type="file" 
                       accept=".jpg,.jpeg,.png,.pdf"
                       onChange={(e) => onChange(e.target.files ? e.target.files[0] : null)}
                       {...rest} 
+                      className="border-input hover:border-primary focus-visible:ring-primary" // Estilo sutil al input
                     />
                   </FormControl>
                   <FormMessage />
