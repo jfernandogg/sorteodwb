@@ -3,6 +3,11 @@ import { z } from 'zod';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/png', 'application/pdf', 'image/jpg'];
 
+// This helps avoid ReferenceError: File is not defined on the server.
+const FileSchema = typeof window === 'undefined' 
+  ? z.any() 
+  : z.instanceof(File, { message: 'El comprobante es requerido.' });
+
 export const RaffleFormSchema = z.object({
   nombre: z.string().min(1, 'El nombre es requerido.'),
   apellidos: z.string().min(1, 'Los apellidos son requeridos.'),
@@ -11,9 +16,8 @@ export const RaffleFormSchema = z.object({
     .min(10, 'El teléfono debe tener al menos 10 dígitos.')
     .regex(/^(?:\+?57)?\d{10}$/, 'Debe ser un número de teléfono colombiano válido (ej: +573001234567 o 3001234567).'),
   stars: z.number().min(1, 'Debes seleccionar al menos una participación.').max(9, 'Puedes seleccionar máximo 9 participaciones.'),
-  receipt: z.custom<File>((val) => val instanceof File, {
-      message: 'El comprobante es requerido.',
-    })
+  receipt: FileSchema
+    .refine((file) => file, 'El comprobante es requerido.') // check for existence
     .refine((file) => file.size <= MAX_FILE_SIZE, `El tamaño máximo del archivo es 5MB.`)
     .refine(
       (file) => ACCEPTED_FILE_TYPES.includes(file.type),
