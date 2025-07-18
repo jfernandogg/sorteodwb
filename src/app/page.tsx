@@ -1,4 +1,6 @@
 
+"use client";
+
 import RafflePageClientContent from '@/components/RafflePageClientContent';
 import AppFooter from '@/components/AppFooter';
 // Removed Image from 'next/image' as it's not used for the video directly here
@@ -39,7 +41,7 @@ export default function Home() {
             Te invitamos a vivir la experiencia de la eterna primavera, meditar, y conectar con los amigos de la Sangha local en este espacio que estamos construyendo juntos <span role="img" aria-label="celebration food community meditation emojis">🎉🍽️🤝🧘‍♀️🧘‍♂️🏠</span>.
           </p>
           <div className="text-xs text-muted-foreground/80 border-t border-border pt-4 mt-6">
-            <p className="mb-1"><span className="text-primary font-semibold">♧</span> La rifa se realizará durante el curso de fin de año, del 5 al 8 de diciembre de 2024.</p>
+            <p className="mb-1"><span className="text-primary font-semibold">♧</span> La rifa se realizará durante el curso de fin de año, del 5 al 8 de diciembre de 2025.</p>
             <p className="mb-1"><span className="text-primary font-semibold">♧</span> Estadía válida durante 2026.</p>
             <p className="mb-1"><span className="text-primary font-semibold">♧</span> Si los días escogidos coinciden con un curso programado, es posible que la habitación privada no esté garantizada (se ofrecerá la mejor alternativa disponible).</p>
             <p><span className="text-primary font-semibold">♧</span> La estadía no incluye alimentación.</p>
