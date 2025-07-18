@@ -40,7 +40,7 @@ export default function Home() {
           </p>
           <div className="text-xs text-muted-foreground/80 border-t border-border pt-4 mt-6">
             <p className="mb-1"><span className="text-primary font-semibold">♧</span> La rifa se realizará durante el curso de fin de año, del 5 al 8 de diciembre de 2024.</p>
-            <p className="mb-1"><span className="text-primary font-semibold">♧</span> Estadía válida durante los años 2025 y 2026.</p>
+            <p className="mb-1"><span className="text-primary font-semibold">♧</span> Estadía válida durante 2026.</p>
             <p className="mb-1"><span className="text-primary font-semibold">♧</span> Si los días escogidos coinciden con un curso programado, es posible que la habitación privada no esté garantizada (se ofrecerá la mejor alternativa disponible).</p>
             <p><span className="text-primary font-semibold">♧</span> La estadía no incluye alimentación.</p>
           </div>
