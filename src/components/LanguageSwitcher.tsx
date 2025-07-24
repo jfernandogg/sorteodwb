@@ -1,8 +1,7 @@
-
 "use client";
 
 import { useLocale } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
 export default function LanguageSwitcher() {
@@ -11,10 +10,8 @@ export default function LanguageSwitcher() {
   const locale = useLocale();
 
   const changeLocale = (nextLocale: 'en' | 'es') => {
-    // This will replace the locale in the URL, but keep the rest of the path.
-    // e.g., /es/about -> /en/about
-    const newPath = pathname.replace(`/${locale}`, `/${nextLocale}`);
-    router.replace(newPath, { scroll: false });
+    const newPathname = pathname.replace(`/${locale}`, `/${nextLocale}`);
+    router.replace(newPathname, { scroll: false });
   };
 
   return (

@@ -1,5 +1,6 @@
-/** @type {import('next').NextConfig} */
+const withNextIntl = require('next-intl/plugin')();
 
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
@@ -19,9 +20,9 @@ const nextConfig = {
   },
   experimental: {
     serverActions: {
-      bodySizeLimit: '10mb', 
+      bodySizeLimit: '10mb',
     },
   },
 };
- 
-module.exports = nextConfig;
+
+module.exports = withNextIntl(nextConfig);
