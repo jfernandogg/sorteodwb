@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import Image from 'next/image';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import AppFooter from '@/components/AppFooter';
+import { Toaster } from '@/components/ui/toaster';
 
 export default async function LocaleLayout({
   children,
@@ -15,8 +16,8 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
-      <div className="font-body antialiased min-h-screen flex flex-col">
+    <body className="font-body antialiased min-h-screen flex flex-col">
+      <NextIntlClientProvider locale={locale} messages={messages}>
         <header className="w-full">
           <Image
             src="/banner.svg"
@@ -30,7 +31,8 @@ export default async function LocaleLayout({
         </header>
         {children}
         <AppFooter />
-      </div>
-    </NextIntlClientProvider>
+        <Toaster />
+      </NextIntlClientProvider>
+    </body>
   );
 }

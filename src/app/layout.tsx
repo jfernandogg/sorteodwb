@@ -1,7 +1,6 @@
 // This is the RootLayout for all routes
 import type { Metadata } from 'next';
 import './globals.css';
-import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: 'Rifa Solidaria Living Center Medellín',
@@ -14,11 +13,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" suppressHydrationWarning>
-      <body>
-        {children}
-        <Toaster />
-      </body>
+    // The lang attribute is managed by the LocaleLayout
+    <html suppressHydrationWarning>
+      <body>{children}</body>
     </html>
   );
 }
