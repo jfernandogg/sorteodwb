@@ -1,10 +1,34 @@
+import { getLocale, getMessages } from 'next-intl/server';
+import { NextIntlClientProvider } from 'next-intl';
+import Image from 'next/image';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import AppFooter from '@/components/AppFooter';
 
-// This layout is now greatly simplified, as the internationalization context
-// is handled by the root layout.
-export default function LocaleLayout({
-  children
+export default async function LocaleLayout({
+  children,
+  params,
 }: {
   children: React.ReactNode;
+  params: { locale: string };
 }) {
-  return children;
+  const locale = await getLocale();
+  const messages = await getMessages();
+
+  return (
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <header className="w-full">
+        <Image
+          src="/banner.svg"
+          alt="Rifa Solidaria Living Center Banner"
+          width={680}
+          height={75}
+          className="w-full h-auto object-cover"
+          priority
+        />
+        <LanguageSwitcher />
+      </header>
+      {children}
+      <AppFooter />
+    </NextIntlClientProvider>
+  );
 }
