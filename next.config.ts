@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+
 const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
@@ -22,7 +23,5 @@ const nextConfig = {
     },
   },
 };
-
-const withNextIntl = require('next-intl/plugin')();
  
-module.exports = withNextIntl(nextConfig);
+module.exports = nextConfig;

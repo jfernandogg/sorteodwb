@@ -30,21 +30,23 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <>
-      <header className="w-full">
-        <Image
-          src="/banner.svg" 
-          alt="Rifa Solidaria Living Center Banner"
-          width={680} 
-          height={75} 
-          className="w-full h-auto object-cover"
-          priority
-        />
-        <LanguageSwitcher />
-      </header>
-      <NextIntlClientProvider locale={locale} messages={messages}>
-        {children}
-      </NextIntlClientProvider>
-    </>
+    <html lang={locale}>
+      <body>
+        <header className="w-full">
+          <Image
+            src="/banner.svg" 
+            alt="Rifa Solidaria Living Center Banner"
+            width={680} 
+            height={75} 
+            className="w-full h-auto object-cover"
+            priority
+          />
+          <LanguageSwitcher />
+        </header>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          {children}
+        </NextIntlClientProvider>
+      </body>
+    </html>
   );
 }

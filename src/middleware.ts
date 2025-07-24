@@ -9,7 +9,10 @@ export default createMiddleware({
 
   // The `pathnames` object holds translations for pages using dynamic routes.
   // This is required even if you don't have any dynamic routes.
-  pathnames: {}
+  pathnames: {},
+
+  // If this is specified, the middleware will redirect users from '/' to '/es'
+  localePrefix: 'always'
 });
  
 export const config = {
@@ -19,6 +22,8 @@ export const config = {
     // - … if they start with `/api`, `/_next` or `/_vercel`
     // - … the ones containing a dot (e.g. `favicon.ico`)
     // - … the ones that are for admin pages
-    '/((?!api|_next|_vercel|adminview-rxedbs|.*\\..*).*)'
+    '/((?!api|_next|_vercel|adminview-rxedbs|.*\\..*).*)',
+    // Match the root path '/' to redirect to the default locale
+    '/'
   ]
 };
