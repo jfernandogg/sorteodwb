@@ -4,6 +4,7 @@ export default getRequestConfig(async ({locale}) => {
   // Validate that the incoming `locale` parameter is valid
   // and load the messages for the given locale.
   return {
+    locale, // Add the locale to the return object
     messages: (await import(`../messages/${locale}.json`)).default
   };
 });
