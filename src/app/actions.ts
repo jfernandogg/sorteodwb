@@ -1,7 +1,7 @@
 
 "use server";
 
-import { RaffleFormValues, RaffleFormSchema } from '@/schemas';
+import { RaffleFormValues, createRaffleFormSchema } from '@/schemas';
 import { headers } from 'next/headers';
 import { firestore } from '@/lib/firebaseServer';
 import { drive } from '@/lib/googleDrive';
@@ -26,9 +26,16 @@ export async function submitRaffleTicket(
   receipt: File
 ): Promise<SubmitRaffleResult> {
   try {
+    // Create a schema instance for validation on the server.
+    // We provide a dummy translation function as messages are not user-facing here.
+    const RaffleFormSchema = createRaffleFormSchema((key: string) => key);
     const validatedData = RaffleFormSchema.safeParse(data);
     if (!validatedData.success) {
-      return { success: false, message: 'Datos inválidos: ' + validatedData.error.flatten().fieldErrors };
+      // Create a more readable error message from Zod's error object
+      const errorMessages = Object.entries(validatedData.error.flatten().fieldErrors)
+        .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+        .join('; ');
+      return { success: false, message: 'Datos inválidos: ' + errorMessages };
     }
 
     // const headersList = headers() as any;

@@ -6,17 +6,17 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PRECIO_POR_TICKET, PAYMENT_PHP_ENDPOINT_BASE_URL } from '@/config';
-import { RaffleFormSchema, RaffleFormValues } from '@/schemas';
+import { createRaffleFormSchema, RaffleFormValues } from '@/schemas';
 import { submitRaffleTicket, type SubmitRaffleResult } from '@/app/actions';
 import { StarSelector } from '@/components/StarSelector';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label'; // ShadCN Label
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // ShadCN Select
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, AlertTriangle, CheckCircle2, Banknote, CreditCard, UploadCloud } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface RaffleFormProps {
   onSubmitSuccess: () => void;
@@ -25,12 +25,16 @@ interface RaffleFormProps {
 type PaymentMethod = 'transfer' | 'card';
 
 export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
+  const t = useTranslations('RaffleForm');
+  const tZod = useTranslations('ZodErrors');
   const [selectedStars, setSelectedStars] = useState(1);
   const [totalCOP, setTotalCOP] = useState(selectedStars * PRECIO_POR_TICKET);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
   const { toast } = useToast();
+
+  const RaffleFormSchema = createRaffleFormSchema(tZod);
 
   const form = useForm<RaffleFormValues>({
     resolver: zodResolver(RaffleFormSchema),
@@ -70,14 +74,14 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
 
       window.open(paymentUrl, '_blank');
       toast({
-        title: "Redireccionando a Pago",
-        description: "Se ha abierto una nueva pestaña para completar el pago con Bold. Sube tu comprobante al regresar.",
+        title: t('redirectToastTitle'),
+        description: t('redirectToastDescription'),
         duration: 5000,
       });
     } else {
       toast({
-        title: "Error de Validación",
-        description: "Por favor, corrige los campos marcados en rojo antes de proceder al pago.",
+        title: t('validationErrorToastTitle'),
+        description: t('validationErrorToastDescription'),
         variant: "destructive",
         duration: 5000,
       });
@@ -88,7 +92,7 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
   const onSubmit = async (values: RaffleFormValues) => {
     setIsSubmitting(true);
     if (!values.receipt) {
-      form.setError('receipt', { type: 'manual', message: 'El comprobante es requerido.' });
+      form.setError('receipt', { type: 'manual', message: tZod('receipt_required') });
       setIsSubmitting(false);
       return;
     }
@@ -100,7 +104,7 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
 
     if (result.success) {
       toast({
-        title: "¡Participación Exitosa!",
+        title: t('submitSuccessToastTitle'),
         description: result.message,
         action: <CheckCircle2 className="text-green-500" />,
         duration: 7000,
@@ -108,7 +112,7 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
       onSubmitSuccess();
     } else {
       toast({
-        title: "Error en la Participación",
+        title: t('submitErrorToastTitle'),
         description: result.message,
         variant: "destructive",
         action: <AlertTriangle className="text-yellow-500" />,
@@ -118,14 +122,14 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
     setIsSubmitting(false);
   };
 
+  const totalFormatted = totalCOP.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 });
+
   return (
     <Card className="w-full max-w-lg mx-auto shadow-xl">
       <CardHeader>
-        <CardTitle className="text-3xl font-headline text-center text-primary">Rifa Solidaria</CardTitle>
-        <CardDescription className="text-center">
-          Participa por una estadía en el Living Center Medellín.
-          <br />
-          Completa tus datos, selecciona tus participaciones y ¡mucha suerte!
+        <CardTitle className="text-3xl font-headline text-center text-primary">{t('title')}</CardTitle>
+        <CardDescription className="text-center" style={{whiteSpace: 'pre-line'}}>
+          {t('description')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -136,9 +140,9 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
               name="nombre"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nombre</FormLabel>
+                  <FormLabel>{t('nameLabel')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Tu nombre" {...field} />
+                    <Input placeholder={t('namePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -149,9 +153,9 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
               name="apellidos"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Apellidos</FormLabel>
+                  <FormLabel>{t('lastNameLabel')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Tus apellidos" {...field} />
+                    <Input placeholder={t('lastNamePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -162,9 +166,9 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t('emailLabel')}</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="tu@correo.com" {...field} />
+                    <Input type="email" placeholder={t('emailPlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -175,9 +179,9 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
               name="telefono"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Teléfono (WhatsApp)</FormLabel>
+                  <FormLabel>{t('phoneLabel')}</FormLabel>
                   <FormControl>
-                    <Input type="tel" placeholder="+573001234567" {...field} />
+                    <Input type="tel" placeholder={t('phonePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -188,9 +192,9 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
               name="stars"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Número de Participaciones (1-9)</FormLabel>
+                  <FormLabel>{t('ticketsLabel')}</FormLabel>
                   <FormDescription className="text-center px-4">
-                    Cada vez que compras una participación, tu nombre se añade a la ruleta. Cuantas más veces compres, más veces apareces, y más posibilidades tienes de ganar.
+                    {t('ticketsDescription')}
                   </FormDescription>
                   <FormControl>
                     <StarSelector
@@ -205,28 +209,28 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
             />
             
             <div className="text-center text-2xl font-bold p-4 bg-secondary/50 rounded-md">
-              Total: {totalCOP.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })}
+              {t('totalLabel')} {totalFormatted}
             </div>
 
             <FormItem>
-              <FormLabel>Forma de Pago</FormLabel>
+              <FormLabel>{t('paymentMethodLabel')}</FormLabel>
               <Select onValueChange={(value: PaymentMethod) => setPaymentMethod(value)} defaultValue={paymentMethod}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una forma de pago" />
+                    <SelectValue placeholder={t('paymentMethodPlaceholder')} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   <SelectItem value="card">
                     <div className="flex items-center">
                       <CreditCard className="mr-2 h-4 w-4" />
-                      Tarjeta de Crédito/PSE (Bold)
+                      {t('cardPayment')}
                     </div>
                   </SelectItem>
                   <SelectItem value="transfer">
                     <div className="flex items-center">
                       <Banknote className="mr-2 h-4 w-4" />
-                      Transferencia Bancolombia
+                      {t('transferPayment')}
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -236,38 +240,37 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
             {paymentMethod === 'card' && (
               <Button type="button" onClick={handlePagar} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" disabled={isPaying || isSubmitting}>
                 {isPaying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2 h-4 w-4" />}
-                Pagar con Tarjeta/PSE ({totalCOP.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })})
+                {t('payWithCardButton', { total: totalFormatted })}
               </Button>
             )}
 
             {paymentMethod === 'transfer' && (
               <div className="p-4 border rounded-md bg-blue-50 border-blue-200 text-blue-800">
-                <h4 className="font-semibold text-lg mb-2">Instrucciones para Transferencia Bancolombia:</h4>
-                <p className="text-sm">Por favor, realiza la transferencia por <strong>{totalCOP.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })}</strong> a la siguiente cuenta:</p>
+                <h4 className="font-semibold text-lg mb-2">{t('transferInstructionsTitle')}</h4>
+                <p className="text-sm">{t('transferInstructionsLine1', { total: totalFormatted })}</p>
                 <ul className="list-disc list-inside my-2 text-sm">
-                  <li><strong>Cuenta de Ahorros Bancolombia:</strong> 69300000133</li>
-                  <li><strong>Nombre del titular:</strong> Confesión Religiosa Budismo Camino del Diamante</li>
-                  <li><strong>NIT/C.C.:</strong> Nit: 901309999</li>
-                  <li><strong>Concepto/Referencia:</strong> Rifa Living Center + Tu Nombre</li>
+                  <li><strong>{t('transferInstructionsLine2').split(': ')[0]}:</strong> {t('transferInstructionsLine2').split(': ')[1]}</li>
+                  <li><strong>{t('transferInstructionsLine3').split(': ')[0]}:</strong> {t('transferInstructionsLine3').split(': ')[1]}</li>
+                  <li><strong>{t('transferInstructionsLine4').split(': ')[0]}:</strong> {t('transferInstructionsLine4').split(': ')[1]}</li>
+                  <li><strong>{t('transferInstructionsLine5').split(': ')[0]}:</strong> {t('transferInstructionsLine5').split(': ')[1]}</li>
                 </ul>
                 <p className="text-sm mt-2">
-                  Una vez realizada la transferencia, guarda el comprobante y súbelo en el campo de abajo.
+                  {t('transferInstructionsLine6')}
                 </p>
               </div>
             )}
             
             <p className="text-sm text-muted-foreground text-center">
-              Después de pagar o transferir, regresa a esta página y sube tu comprobante.
+              {t('afterPaymentNote')}
             </p>
 
-            {/* Bloque de énfasis para la subida del comprobante */}
             <div className="mt-4 p-4 border-2 border-dashed border-primary rounded-lg bg-primary/10 text-center">
               <UploadCloud className="h-10 w-10 text-primary mx-auto mb-2" />
               <p className="text-lg font-semibold text-primary mb-1">
-                ¡Último Paso! Sube tu Comprobante Aquí
+                {t('uploadTitle')}
               </p>
               <p className="text-sm text-foreground">
-                Adjunta el archivo (JPG, PNG, PDF - Máx 5MB) de tu pago o transferencia para completar tu participación.
+                {t('uploadDescription')}
               </p>
             </div>
 
@@ -275,8 +278,8 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
               control={form.control}
               name="receipt"
               render={({ field: { onChange, value, ...rest } }) => (
-                <FormItem className="mt-2"> {/* Ajuste de margen superior para acercarlo al bloque de énfasis */}
-                  <FormLabel className="sr-only">Comprobante de Pago/Transferencia</FormLabel> {/* La label principal está en el bloque de arriba */}
+                <FormItem className="mt-2">
+                  <FormLabel className="sr-only">{t('uploadLabel')}</FormLabel>
                   <FormControl>
                     <Input 
                       type="file" 
@@ -293,18 +296,16 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
 
             <Button type="submit" className="w-full" disabled={isSubmitting || (paymentMethod === 'card' && isPaying)}>
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Enviar Participación y Comprobante
+              {isSubmitting ? t('submittingButton') : t('submitButton')}
             </Button>
           </form>
         </Form>
       </CardContent>
       <CardFooter>
         <p className="text-xs text-muted-foreground text-center w-full">
-          Al participar aceptas los términos y condiciones de la rifa.
+          {t('terms')}
         </p>
       </CardFooter>
     </Card>
   );
 }
-
-    

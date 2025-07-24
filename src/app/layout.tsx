@@ -1,3 +1,6 @@
+// This is the RootLayout for all routes
+// It does not have access to the `locale` param
+// It's used to render the <html> and <body> tags
 
 import type { Metadata } from 'next';
 import './globals.css';
@@ -14,29 +17,5 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <html lang="es" suppressHydrationWarning={true}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased min-h-screen flex flex-col" suppressHydrationWarning={true}>
-        <header className="w-full">
-          {/* Asumiendo que la imagen SVG está en public/banner.svg */}
-          {/* Las dimensiones 680x75 son para la relación de aspecto, el SVG escalará */}
-          <Image
-            src="/banner.svg" 
-            alt="Rifa Solidaria Living Center Banner"
-            width={680} 
-            height={75} 
-            className="w-full h-auto object-cover" // w-full hace que ocupe el ancho, h-auto mantiene la proporción
-            priority
-          />
-        </header>
-        {children}
-        <Toaster />
-      </body>
-    </html>
-  );
+  return children;
 }

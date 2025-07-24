@@ -1,18 +1,28 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 export default function AppFooter() {
-  const [displayYear, setDisplayYear] = useState<number | string>('...');
+  const t = useTranslations('AppFooter');
+  const [year, setYear] = useState<number | null>(null);
 
   useEffect(() => {
-    setDisplayYear(new Date().getFullYear());
+    setYear(new Date().getFullYear());
   }, []);
+
+  if (year === null) {
+    return (
+      <footer className="w-full text-center p-4 mt-auto">
+        <p className="text-sm text-muted-foreground">&nbsp;</p>
+      </footer>
+    );
+  }
 
   return (
     <footer className="w-full text-center p-4 mt-auto">
       <p className="text-sm text-muted-foreground">
-        &copy; {displayYear} Living Center Medellín. Todos los derechos reservados.
+        {t('copyright', { year })}
       </p>
     </footer>
   );
