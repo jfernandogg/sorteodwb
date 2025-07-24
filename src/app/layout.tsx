@@ -1,11 +1,11 @@
 // This is the RootLayout for all routes
-// It does not have access to the `locale` param
-// It's used to render the <html> and <body> tags
+// It will wrap every page, including the internationalized and non-internationalized ones.
 
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import Image from 'next/image';
+// Image is not used here directly but good to keep if needed for a root element
+import Image from 'next/image'; 
 
 export const metadata: Metadata = {
   title: 'Rifa Solidaria Living Center Medellín',
@@ -17,5 +17,19 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return children;
+  return (
+    // The suppressHydrationWarning is important here because of next-intl
+    <html lang="es" suppressHydrationWarning={true}>
+       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
+      </head>
+      <body className="font-body antialiased min-h-screen flex flex-col" suppressHydrationWarning={true}>
+        {/* The children will be either the [locale] layout or other page layouts */}
+        {children}
+        <Toaster />
+      </body>
+    </html>
+  );
 }
