@@ -1,8 +1,9 @@
 import {NextIntlClientProvider} from 'next-intl';
-import {getMessages, getLocale} from 'next-intl/server';
+import {getMessages} from 'next-intl/server';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import AppFooter from '@/components/AppFooter';
 
 // Can be imported from a shared config
 const locales = ['en', 'es'];
@@ -20,34 +21,30 @@ export const metadata: Metadata = {
 
 export default async function LocaleLayout({
   children,
-  params
+  params: {locale}
 }: {
   children: React.ReactNode;
   params: {locale: string};
 }) {
-  const locale = await getLocale();
   // Providing all messages to the client
   // side is the easiest way to get started
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
-      <body>
-        <header className="w-full">
-            <Image
-              src="/banner.svg" 
-              alt="Rifa Solidaria Living Center Banner"
-              width={680} 
-              height={75} 
-              className="w-full h-auto object-cover"
-              priority
-            />
-            <LanguageSwitcher />
-        </header>
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          {children}
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <header className="w-full">
+          <Image
+            src="/banner.svg" 
+            alt="Rifa Solidaria Living Center Banner"
+            width={680} 
+            height={75} 
+            className="w-full h-auto object-cover"
+            priority
+          />
+          <LanguageSwitcher />
+      </header>
+      {children}
+      <AppFooter />
+    </NextIntlClientProvider>
   );
 }

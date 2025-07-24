@@ -18,10 +18,11 @@ export default function RootLayout({
   return (
     // The suppressHydrationWarning is important here because of next-intl
     // The lang attribute is managed by the LocaleLayout
-    <body className="font-body antialiased min-h-screen flex flex-col" suppressHydrationWarning>
-      {/* The children will be either the [locale] layout or other page layouts */}
-      {children}
-      <Toaster />
-    </body>
+    <html suppressHydrationWarning>
+      <body className="font-body antialiased min-h-screen flex flex-col">
+        {children}
+        <Toaster />
+      </body>
+    </html>
   );
 }
