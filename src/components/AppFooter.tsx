@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
 
 export default function AppFooter() {
-  const t = useTranslations('AppFooter');
   const [year, setYear] = useState<number | null>(null);
 
   useEffect(() => {
@@ -19,10 +17,13 @@ export default function AppFooter() {
     );
   }
 
+  // Simplified copyright notice that does not require translations.
+  const copyrightText = `© ${year} Living Center Medellín. All rights reserved.`;
+
   return (
     <footer className="w-full text-center p-4 mt-auto">
       <p className="text-sm text-muted-foreground">
-        {t('copyright', { year })}
+        {copyrightText}
       </p>
     </footer>
   );
