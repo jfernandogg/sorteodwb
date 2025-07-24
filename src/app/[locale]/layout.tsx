@@ -2,7 +2,6 @@ import { getLocale, getMessages } from 'next-intl/server';
 import { NextIntlClientProvider } from 'next-intl';
 import Image from 'next/image';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import AppFooter from '@/components/AppFooter';
 
 export default async function LocaleLayout({
   children,
@@ -28,7 +27,6 @@ export default async function LocaleLayout({
         <LanguageSwitcher />
       </header>
       {children}
-      <AppFooter />
     </NextIntlClientProvider>
   );
 }
