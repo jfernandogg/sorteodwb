@@ -20,19 +20,19 @@ export default async function LocaleLayout({
 
   return (
     <Providers locale={locale} messages={messages}>
-        <header className="w-full">
-          <Image
-            src="/banner.svg"
-            alt="Rifa Solidaria Living Center Banner"
-            width={680}
-            height={75}
-            className="w-full h-auto object-cover"
-            priority
-          />
-          <LanguageSwitcher />
-        </header>
-        {children}
-        <AppFooter />
+      <header className="w-full">
+        <Image
+          src="/banner.svg"
+          alt="Rifa Solidaria Living Center Banner"
+          width={680}
+          height={75}
+          className="w-full h-auto object-cover"
+          priority
+        />
+        <LanguageSwitcher />
+      </header>
+      {children}
+      <AppFooter />
     </Providers>
   );
 }
