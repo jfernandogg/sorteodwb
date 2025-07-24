@@ -1,10 +1,8 @@
 import {NextIntlClientProvider} from 'next-intl';
 import {getMessages} from 'next-intl/server';
 import type { Metadata } from 'next';
-import '../globals.css';
-// Toaster is now in the root layout
-// import { Toaster } from "@/components/ui/toaster"; 
 import Image from 'next/image';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 // Can be imported from a shared config
 const locales = ['en', 'es'];
@@ -31,10 +29,8 @@ export default async function LocaleLayout({
   // side is the easiest way to get started
   const messages = await getMessages();
 
-  // The html and body tags are now in src/app/layout.tsx
-  // This layout just provides the localization context and the main structure.
   return (
-    <NextIntlClientProvider messages={messages}>
+    <>
       <header className="w-full">
         <Image
           src="/banner.svg" 
@@ -44,8 +40,11 @@ export default async function LocaleLayout({
           className="w-full h-auto object-cover"
           priority
         />
+        <LanguageSwitcher />
       </header>
-      {children}
-    </NextIntlClientProvider>
+      <NextIntlClientProvider locale={locale} messages={messages}>
+        {children}
+      </NextIntlClientProvider>
+    </>
   );
 }
