@@ -1,22 +1,25 @@
-import { getMessages, unstable_setRequestLocale } from 'next-intl/server';
+import { getMessages } from 'next-intl/server';
 import { NextIntlClientProvider } from 'next-intl';
 import Image from 'next/image';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import AppFooter from '@/components/AppFooter';
-import { Toaster } from '@/components/ui/toaster';
+import {unstable_setRequestLocale} from 'next-intl/server';
 
 export default async function LocaleLayout({
   children,
   params: {locale},
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: {locale: string};
 }) {
+  // Enable static rendering
   unstable_setRequestLocale(locale);
+
+  // Providing all messages to the client
+  // side is the easiest way to get started
   const messages = await getMessages();
 
   return (
-    <body className="font-body antialiased min-h-screen flex flex-col">
       <NextIntlClientProvider locale={locale} messages={messages}>
         <header className="w-full">
           <Image
@@ -31,8 +34,6 @@ export default async function LocaleLayout({
         </header>
         {children}
         <AppFooter />
-        <Toaster />
       </NextIntlClientProvider>
-    </body>
   );
 }
