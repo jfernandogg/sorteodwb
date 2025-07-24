@@ -3,26 +3,12 @@
 
 import RafflePageClientContent from '@/components/RafflePageClientContent';
 import {useTranslations} from 'next-intl';
-import Image from 'next/image';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
-import AppFooter from '@/components/AppFooter';
 
 export default function Home() {
   const t = useTranslations('HomePage');
 
   return (
     <>
-      <header className="w-full">
-        <Image
-          src="/banner.svg"
-          alt="Rifa Solidaria Living Center Banner"
-          width={680}
-          height={75}
-          className="w-full h-auto object-cover"
-          priority
-        />
-        <LanguageSwitcher />
-      </header>
       <main className="flex flex-col items-center justify-center flex-grow p-4 sm:p-8 md:p-12">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary text-center mb-6 sm:mb-8">
           {t('pageTitle')}
@@ -64,7 +50,6 @@ export default function Home() {
         </div>
         <RafflePageClientContent />
       </main>
-      <AppFooter />
     </>
   );
 }

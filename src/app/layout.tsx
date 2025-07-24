@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, unstable_setRequestLocale } from 'next-intl/server';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
+
+// This is the root layout. It does not have access to the `locale` param.
+// It's responsible for the overall HTML structure.
 
 export const metadata: Metadata = {
   title: 'Rifa Solidaria Living Center Medellín',
@@ -11,25 +12,17 @@ export const metadata: Metadata = {
 
 interface RootLayoutProps {
   children: React.ReactNode;
-  params: {
-    locale: string;
-  };
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
-  params: { locale },
 }: RootLayoutProps) {
-  unstable_setRequestLocale(locale);
-  const messages = await getMessages();
-
   return (
-    <html lang={locale} suppressHydrationWarning>
+    // The lang attribute will be set in the [locale]/layout.tsx file
+    <html suppressHydrationWarning>
       <body className="font-body antialiased min-h-screen flex flex-col">
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          {children}
-          <Toaster />
-        </NextIntlClientProvider>
+        {children}
+        <Toaster />
       </body>
     </html>
   );
