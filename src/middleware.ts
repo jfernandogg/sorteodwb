@@ -23,7 +23,6 @@ export const config = {
     // - … the ones containing a dot (e.g. `favicon.ico`)
     // - … the ones that are for admin pages
     '/((?!api|_next|_vercel|adminview-rxedbs|.*\\..*).*)',
-    // Match the root path '/' to redirect to the default locale
-    '/'
+    // Do not match the root path, as it's handled by the localePrefix redirection
   ]
 };
