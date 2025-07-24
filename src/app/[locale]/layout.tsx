@@ -2,7 +2,7 @@ import { getMessages, unstable_setRequestLocale } from 'next-intl/server';
 import AppFooter from '@/components/AppFooter';
 import Image from 'next/image';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { NextIntlClientProvider } from 'next-intl';
+import Providers from '@/components/Providers';
 
 interface LocaleLayoutProps {
   children: React.ReactNode;
@@ -15,13 +15,11 @@ export default async function LocaleLayout({
   children,
   params: { locale },
 }: LocaleLayoutProps) {
-  // Providing all messages to the client
-  // side is a good default.
   const messages = await getMessages();
   unstable_setRequestLocale(locale);
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
+    <Providers locale={locale} messages={messages}>
         <header className="w-full">
           <Image
             src="/banner.svg"
@@ -35,6 +33,6 @@ export default async function LocaleLayout({
         </header>
         {children}
         <AppFooter />
-    </NextIntlClientProvider>
+    </Providers>
   );
 }

@@ -1,4 +1,3 @@
-// app/components/Providers.tsx
 'use client';
 
 import { NextIntlClientProvider } from 'next-intl';
@@ -6,7 +5,7 @@ import { NextIntlClientProvider } from 'next-intl';
 type ProvidersProps = {
   children: React.ReactNode;
   locale: string;
-  messages: any; // You can use a more specific type if you have one
+  messages: any;
 };
 
 export default function Providers({
