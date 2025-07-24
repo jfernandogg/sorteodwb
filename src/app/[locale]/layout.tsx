@@ -3,6 +3,13 @@ import { NextIntlClientProvider } from 'next-intl';
 import Image from 'next/image';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import AppFooter from '@/components/AppFooter';
+import { Toaster } from '@/components/ui/toaster';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Rifa Solidaria Living Center Medellín',
+  description: 'Participa en la rifa para una estadía en el Centro de Budismo Camino del Diamante de Medellín.',
+};
 
 export default async function LocaleLayout({
   children,
@@ -11,28 +18,29 @@ export default async function LocaleLayout({
   children: React.ReactNode;
   params: {locale: string};
 }) {
-  // Enable static rendering
   unstable_setRequestLocale(locale);
-
-  // Providing all messages to the client
-  // side is the easiest way to get started
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
-      <header className="w-full">
-        <Image
-          src="/banner.svg"
-          alt="Rifa Solidaria Living Center Banner"
-          width={680}
-          height={75}
-          className="w-full h-auto object-cover"
-          priority
-        />
-        <LanguageSwitcher />
-      </header>
-      {children}
-      <AppFooter />
-    </NextIntlClientProvider>
+    <html lang={locale} suppressHydrationWarning>
+      <body className="font-body antialiased min-h-screen flex flex-col">
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <header className="w-full">
+            <Image
+              src="/banner.svg"
+              alt="Rifa Solidaria Living Center Banner"
+              width={680}
+              height={75}
+              className="w-full h-auto object-cover"
+              priority
+            />
+            <LanguageSwitcher />
+          </header>
+          {children}
+          <AppFooter />
+        </NextIntlClientProvider>
+        <Toaster />
+      </body>
+    </html>
   );
 }
