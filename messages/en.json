@@ -71,5 +71,26 @@
     "receipt_required": "A receipt is required.",
     "receipt_max_size": "Maximum file size is 5MB.",
     "receipt_invalid_type": "Only .jpg, .jpeg, .png, .pdf files are allowed."
+  },
+  "SorteoPage": {
+    "title": "Solidarity Raffle Draw!",
+    "description": "Press the button to start the draw and discover the winner. Good luck to everyone!",
+    "loadingParticipants": "Loading participants...",
+    "errorTitle": "Error",
+    "noParticipantsError": "There are no verified participants to conduct the draw.",
+    "loadingError": "Error loading participants.",
+    "na": "N/A",
+    "error": "Error",
+    "spinning": "Spinning...",
+    "spinButton": "Start Draw!",
+    "spinningButton": "Drawing...",
+    "spinAgainButton": "Draw Again",
+    "congratsWinner": "Congratulations to the Winner!",
+    "totalUniqueParticipants": "Total unique participants: {count}",
+    "totalEntries": "Total entries in the draw: {count}",
+    "showListButton": "Show Draw Participants List",
+    "hideListButton": "Hide Draw Participants List",
+    "listTitle": "Full List of Entries for the Draw",
+    "listDescription": "Each name appears according to the number of entries purchased."
   }
 }

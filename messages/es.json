@@ -71,5 +71,26 @@
     "receipt_required": "El comprobante es requerido.",
     "receipt_max_size": "El tamaño máximo del archivo es 5MB.",
     "receipt_invalid_type": "Solo se permiten archivos .jpg, .jpeg, .png, .pdf."
+  },
+  "SorteoPage": {
+    "title": "¡Sorteo Rifa Solidaria!",
+    "description": "Presiona el botón para iniciar el sorteo y descubrir al ganador. ¡Mucha suerte a todos!",
+    "loadingParticipants": "Cargando participantes...",
+    "errorTitle": "Error",
+    "noParticipantsError": "No hay participantes verificados para realizar el sorteo.",
+    "loadingError": "Error cargando participantes.",
+    "na": "N/A",
+    "error": "Error",
+    "spinning": "Sorteando...",
+    "spinButton": "¡Realizar Sorteo!",
+    "spinningButton": "Sorteando...",
+    "spinAgainButton": "Sortear de Nuevo",
+    "congratsWinner": "¡Felicidades al Ganador!",
+    "totalUniqueParticipants": "Total de participantes únicos: {count}",
+    "totalEntries": "Total de participaciones en el sorteo: {count}",
+    "showListButton": "Ver Lista de Participantes del Sorteo",
+    "hideListButton": "Ocultar Lista de Participantes del Sorteo",
+    "listTitle": "Lista Completa de Participaciones para el Sorteo",
+    "listDescription": "Cada nombre aparece según el número de participaciones compradas."
   }
 }
