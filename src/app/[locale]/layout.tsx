@@ -1,4 +1,4 @@
-import { getLocale, getMessages, unstable_setRequestLocale } from 'next-intl/server';
+import { getMessages, unstable_setRequestLocale } from 'next-intl/server';
 import { NextIntlClientProvider } from 'next-intl';
 import Image from 'next/image';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
