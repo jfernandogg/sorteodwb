@@ -2,7 +2,6 @@
 "use client";
 
 import RafflePageClientContent from '@/components/RafflePageClientContent';
-import AppFooter from '@/components/AppFooter';
 import {useTranslations} from 'next-intl';
 
 export default function Home() {
@@ -49,7 +48,6 @@ export default function Home() {
         </div>
       </div>
       <RafflePageClientContent />
-      <AppFooter />
     </main>
   );
 }

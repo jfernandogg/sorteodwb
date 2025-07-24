@@ -2,6 +2,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
+import {unstable_setRequestLocale} from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'Rifa Solidaria Living Center Medellín',
@@ -10,14 +11,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  params: {locale},
 }: Readonly<{
   children: React.ReactNode;
+  params: {locale: string};
 }>) {
-  // This is the root layout, it should be simple and not contain much logic.
-  // The suppressHydrationWarning is a good practice for the root html tag.
+  // Providing all messages to the client
+  // side is the easiest way to get started
+  unstable_setRequestLocale(locale);
+
   return (
-    <html suppressHydrationWarning>
-      <body className="font-body antialiased min-h-screen flex flex-col">
+    <html lang={locale} suppressHydrationWarning>
+      <body>
         {children}
         <Toaster />
       </body>
