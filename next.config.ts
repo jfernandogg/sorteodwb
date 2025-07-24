@@ -1,4 +1,4 @@
-
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
@@ -26,7 +26,6 @@ const nextConfig = {
       "https://6000-firebase-studio-1749057513672.cluster-f4iwdviaqvc2ct6pgytzw4xqy4.cloudworkstations.dev"
     ],
   },
-  plugins: ['./src/i18n.ts'],
 };
 
 module.exports = nextConfig;
