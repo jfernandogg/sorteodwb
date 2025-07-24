@@ -18,6 +18,7 @@ export const config = {
     // Match all pathnames except for
     // - … if they start with `/api`, `/_next` or `/_vercel`
     // - … the ones containing a dot (e.g. `favicon.ico`)
-    '/((?!api|_next|_vercel|.*\\..*).*)',
+    // - … the ones that are for admin or sorteo pages
+    '/((?!api|_next|_vercel|adminview-rxedbs|sorteo|.*\\..*).*)'
   ]
 };
