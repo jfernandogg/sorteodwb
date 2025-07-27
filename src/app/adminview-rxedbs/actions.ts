@@ -1,8 +1,6 @@
 "use server";
 
 import { getDatabase } from '@/lib/firebaseServer';
-// @ts-ignore - Firestore Timestamp type might not be globally available for client
-import type { Timestamp as FirestoreTimestamp } from 'firebase-admin/firestore'; 
 import type { RaffleFormValues } from '@/schemas';
 
 // Interface for the serializable timestamp
@@ -13,7 +11,7 @@ interface SerializableTimestamp {
 
 // Define the structure of a raffle entry as it will be passed to the client
 export interface ClientRaffleEntry extends Omit<RaffleFormValues, 'receipt'> {
-  id: string; // Firestore document ID
+  id: string; // MongoDB document ID
   ticketNumber: number;
   receiptDriveId?: string;
   receiptName?: string;
@@ -25,8 +23,8 @@ export interface ClientRaffleEntry extends Omit<RaffleFormValues, 'receipt'> {
   pagoVerificado?: boolean; // Added pagoVerificado
 }
 
-// Original Firestore entry structure (used internally in this server action)
-interface FirestoreRaffleEntry extends Omit<RaffleFormValues, 'receipt'> {
+// Original MongoDB entry structure (used internally in this server action)
+interface MongoRaffleEntry extends Omit<RaffleFormValues, 'receipt'> {
   id: string;
   ticketNumber: number;
   receiptDriveId?: string;
@@ -34,7 +32,7 @@ interface FirestoreRaffleEntry extends Omit<RaffleFormValues, 'receipt'> {
   receiptMimeType?: string;
   receiptSize?: number;
   receiptUrl?: string;
-  createdAt: FirestoreTimestamp; // Firestore Timestamp
+  createdAt: Date; // MongoDB Date
   clientIp?: string;
   pagoVerificado?: boolean; // Added pagoVerificado
 }

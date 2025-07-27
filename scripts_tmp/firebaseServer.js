@@ -7,14 +7,7 @@ var app_1 = require("firebase-admin/app");
 var firestore_1 = require("firebase-admin/firestore");
 var app;
 if (!(0, app_1.getApps)().length) {
-    var serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-        ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-        : undefined;
-    if (!serviceAccount) {
-        throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY not set');
-    }
-    console.log('[firebaseServer] project_id:', serviceAccount.project_id);
-    app = (0, app_1.initializeApp)({ credential: (0, app_1.cert)(serviceAccount) });
+    app = (0, app_1.initializeApp)();
 }
 else {
     app = (0, app_1.getApps)()[0];
