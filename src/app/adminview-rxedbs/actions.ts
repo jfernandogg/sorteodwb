@@ -1,7 +1,6 @@
-
 "use server";
 
-import { firestore } from '@/lib/firebaseServer';
+import { getDatabase } from '@/lib/firebaseServer';
 // @ts-ignore - Firestore Timestamp type might not be globally available for client
 import type { Timestamp as FirestoreTimestamp } from 'firebase-admin/firestore'; 
 import type { RaffleFormValues } from '@/schemas';
@@ -59,28 +58,30 @@ export async function authenticateAndFetchEntries(password: string): Promise<Aut
   }
 
   try {
-    const snapshot = await firestore.collection('raffleTickets').orderBy('ticketNumber', 'desc').get();
-    const entries: ClientRaffleEntry[] = snapshot.docs.map(doc => {
-      const data = doc.data() as Omit<FirestoreRaffleEntry, 'id'>;
+    const db = await getDatabase();
+    const entriesCursor = db.collection('raffleTickets').find().sort({ ticketNumber: -1 });
+    const entriesArray = await entriesCursor.toArray();
+
+    const entries: ClientRaffleEntry[] = entriesArray.map((doc: any) => {
       return {
-        id: doc.id,
-        nombre: data.nombre,
-        apellidos: data.apellidos,
-        email: data.email,
-        telefono: data.telefono,
-        stars: data.stars,
-        ticketNumber: data.ticketNumber,
-        receiptDriveId: data.receiptDriveId,
-        receiptName: data.receiptName,
-        receiptMimeType: data.receiptMimeType,
-        receiptSize: data.receiptSize,
-        receiptUrl: data.receiptUrl,
-        createdAt: { // Convert Timestamp to serializable object
-          seconds: data.createdAt.seconds,
-          nanoseconds: data.createdAt.nanoseconds,
+        id: doc._id.toString(),
+        nombre: doc.nombre || '',
+        apellidos: doc.apellidos || '',
+        email: doc.email || '',
+        telefono: doc.telefono || '',
+        stars: doc.stars || 0,
+        ticketNumber: doc.ticketNumber || 0,
+        receiptDriveId: doc.receiptDriveId || '',
+        receiptName: doc.receiptName || '',
+        receiptMimeType: doc.receiptMimeType || '',
+        receiptSize: doc.receiptSize || 0,
+        receiptUrl: doc.receiptUrl || '',
+        createdAt: {
+          seconds: doc.createdAt?.getTime() / 1000 || 0,
+          nanoseconds: 0,
         },
-        clientIp: data.clientIp,
-        pagoVerificado: data.pagoVerificado || false, // Default to false if undefined
+        clientIp: doc.clientIp || '',
+        pagoVerificado: doc.pagoVerificado || false,
       };
     });
     return { success: true, entries };
@@ -99,27 +100,25 @@ export async function updatePagoVerificadoStatus(
   entryId: string,
   pagoVerificado: boolean
 ): Promise<UpdatePagoVerificadoResult> {
-  // Basic check: Ensure the user calling this is somehow authenticated as admin.
-  // For this specific page, we rely on the initial password check.
-  // In a more complex app, you'd use session tokens or proper auth middleware.
   const adminPassword = process.env.ADMIN_VIEW_PASSWORD;
-  if (!adminPassword) { // This check is more for server config than per-call auth here.
+  if (!adminPassword) {
     console.error("ADMIN_VIEW_PASSWORD no está configurado.");
     return { success: false, message: "Error de configuración del servidor." };
   }
-  
+
   if (!entryId) {
     return { success: false, message: "ID de entrada no proporcionado." };
   }
 
   try {
-    await firestore.collection('raffleTickets').doc(entryId).update({
-      pagoVerificado: pagoVerificado,
-    });
+    const db = await getDatabase();
+    await db.collection('raffleTickets').updateOne(
+      { _id: new ObjectId(entryId) },
+      { $set: { pagoVerificado: pagoVerificado } }
+    );
     return { success: true, message: "Estado de pago verificado actualizado." };
   } catch (error) {
     console.error("Error al actualizar el estado de pago verificado:", error);
-    // @ts-ignore
     const errorMessage = error instanceof Error ? error.message : "Error desconocido";
     return { success: false, message: `Error al actualizar: ${errorMessage}` };
   }

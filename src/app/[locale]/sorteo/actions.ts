@@ -1,7 +1,6 @@
-
 'use server';
 
-import { firestore } from '@/lib/firebaseServer';
+import { getDatabase } from '@/lib/firebaseServer';
 
 export interface VerifiedParticipant {
   id: string;
@@ -19,23 +18,21 @@ interface FetchParticipantsResult {
 
 export async function fetchVerifiedParticipantsForSorteo(): Promise<FetchParticipantsResult> {
   try {
-    const snapshot = await firestore
-      .collection('raffleTickets')
-      .where('pagoVerificado', '==', true)
-      .get();
+    const db = await getDatabase();
+    const participantsCursor = db.collection('raffleTickets').find({ pagoVerificado: true });
+    const participantsArray = await participantsCursor.toArray();
 
-    if (snapshot.empty) {
+    if (participantsArray.length === 0) {
       return { success: true, participants: [] };
     }
 
-    const participants: VerifiedParticipant[] = snapshot.docs.map(doc => {
-      const data = doc.data();
+    const participants: VerifiedParticipant[] = participantsArray.map((doc: any) => {
       return {
-        id: doc.id,
-        nombre: data.nombre,
-        apellidos: data.apellidos,
-        email: data.email,
-        stars: data.stars,
+        id: doc._id.toString(),
+        nombre: doc.nombre || '',
+        apellidos: doc.apellidos || '',
+        email: doc.email || '',
+        stars: doc.stars || 0,
       };
     });
 

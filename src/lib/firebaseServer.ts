@@ -1,6 +1,6 @@
 import 'server-only';
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import clientPromise from './mongoServer';
 
 let app;
 if (!getApps().length) {
@@ -22,3 +22,8 @@ console.log('[firebaseServer] databaseId:', databaseId);
 
 // getFirestore puede recibir el ID de la base de datos como segundo argumento
 export const firestore = getFirestore(app, databaseId);
+
+export const getDatabase = async () => {
+  const client = await clientPromise;
+  return client.db();
+};

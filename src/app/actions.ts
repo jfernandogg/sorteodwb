@@ -1,14 +1,12 @@
-
 "use server";
 
 import { RaffleFormValues, createRaffleFormSchema } from '@/schemas';
 import { headers } from 'next/headers';
-import { firestore } from '@/lib/firebaseServer';
 import { drive } from '@/lib/googleDrive';
 import { Readable } from 'stream';
 import { sendMail } from '@/lib/nodemailer';
-// @ts-ignore - firebase-admin types may not be installed in all environments
-import type { FirebaseFirestore } from 'firebase-admin/firestore';
+import { getDatabase } from '@/lib/firebaseServer';
+import { ObjectId } from 'mongodb';
 
 export type SubmitRaffleResult = {
   success: boolean;
@@ -26,8 +24,9 @@ export async function submitRaffleTicket(
   receipt: File
 ): Promise<SubmitRaffleResult> {
   try {
-    // Create a schema instance for validation on the server.
-    // We provide a dummy translation function as messages are not user-facing here.
+    const db = await getDatabase();
+
+    // Validar datos
     const RaffleFormSchema = createRaffleFormSchema((key: string) => key);
     const validatedData = RaffleFormSchema.safeParse(data);
     if (!validatedData.success) {
@@ -38,31 +37,25 @@ export async function submitRaffleTicket(
       return { success: false, message: 'Datos inválidos: ' + errorMessages };
     }
 
-    // const headersList = headers() as any;
     const headersList = await headers();
     const clientIp = headersList.get('x-forwarded-for') || headersList.get('remote-addr');
 
-    // Verificar duplicados por email y nombre del archivo
-    console.log('Consultando duplicados en raffleTickets...');
-    const dup = await firestore
-      .collection('raffleTickets')
-      .where('email', '==', validatedData.data.email)
-      .where('receiptName', '==', receipt.name)
-      .limit(1)
-      .get();
-      console.log('Resultado de consulta de duplicados:', dup);
-    if (!dup.empty) {
+    // Verificar duplicados
+    const dup = await db.collection('raffleTickets').findOne({
+      email: validatedData.data.email,
+      receiptName: receipt.name,
+    });
+    if (dup) {
       return { success: false, message: 'Ya existe una participación con este correo y nombre de comprobante.' };
     }
 
-    // Generar consecutivo de ticket
-    let ticketNumber = 0;
-    const counterRef = firestore.collection('meta').doc('counters');
-    await firestore.runTransaction(async (tx: FirebaseFirestore.Transaction) => {
-      const snap = await tx.get(counterRef);
-      ticketNumber = (snap.data()?.ticketCounter || 0) + 1;
-      tx.set(counterRef, { ticketCounter: ticketNumber }, { merge: true });
-    });
+    // Generar número de ticket único
+    const counter = await db.collection('meta').findOneAndUpdate(
+      { _id: new ObjectId('000000000000000000000001') },
+      { $inc: { ticketCounter: 1 } },
+      { returnDocument: 'after', upsert: true }
+    );
+    const ticketNumber = counter?.value?.ticketCounter || 1;
 
     // Subir comprobante a Google Drive
     const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
@@ -77,36 +70,35 @@ export async function submitRaffleTicket(
     });
     const receiptUrl = driveRes.data.webViewLink || '';
 
-    // Guardar datos en Firestore
-    // Excluir el campo 'receipt' si existe en validatedData.data
+    // Guardar datos en MongoDB
     const { receipt: _omitReceipt, ...plainData } = validatedData.data;
-    await firestore.collection('raffleTickets').add({
+    await db.collection('raffleTickets').insertOne({
       ...plainData,
       ticketNumber,
       receiptDriveId: driveRes.data.id,
-      receiptName: receipt.name, // Se guarda el nombre del archivo
+      receiptName: receipt.name,
       receiptMimeType: receipt.type,
       receiptSize: receipt.size,
       receiptUrl,
       createdAt: new Date(),
       clientIp,
-      pagoVerificado: false, // Initialize pagoVerificado status
+      pagoVerificado: false,
     });
 
-    // Enviar correo de notificación al usuario
+    // Enviar correo de notificación
     try {
       const formHtml = Object.entries(plainData)
         .map(([key, value]) => {
           const label = key === 'stars' ? 'Participaciones Adquiridas' : key;
           return `<b>${label.charAt(0).toUpperCase() + label.slice(1)}:</b> ${value}<br>`;
-        }) 
+        })
         .join('');
 
       await sendMail({
         to: plainData.email,
         subject: `¡Registro recibido! Ticket #${ticketNumber} - Rifa Solidaria Living Center Medellín`,
         html: `<p>¡Gracias por participar en la rifa!</p><p>Tu número único de registro es: <b>${ticketNumber}</b></p><p>Datos registrados:</p>${formHtml}<p>Puedes ver tu comprobante <a href="${receiptUrl}">aquí</a>.</p>`,
-        text: `¡Gracias por participar en la rifa!\nTu número único de registro es: ${ticketNumber}\n\nDatos registrados:\n${Object.entries(plainData).map(([k,v])=>`${k === 'stars' ? 'Participaciones Adquiridas' : k.charAt(0).toUpperCase() + k.slice(1)}: ${v}`).join('\n')}\nComprobante: ${receiptUrl}`
+        text: `¡Gracias por participar en la rifa!\nTu número único de registro es: ${ticketNumber}\n\nDatos registrados:\n${Object.entries(plainData).map(([k,v])=>`${k === 'stars' ? 'Participaciones Adquiridas' : k.charAt(0).toUpperCase() + k.slice(1)}: ${v}`).join('\n')}\nComprobante: ${receiptUrl}`,
       });
     } catch (mailErr) {
       console.error('Error enviando correo de notificación:', mailErr);
