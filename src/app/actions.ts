@@ -2,11 +2,10 @@
 
 import { RaffleFormValues, createRaffleFormSchema } from '@/schemas';
 import { headers } from 'next/headers';
-import { drive } from '@/lib/googleDrive';
-import { Readable } from 'stream';
 import { sendMail } from '@/lib/nodemailer';
 import { getDatabase } from '@/lib/firebaseServer';
 import { ObjectId } from 'mongodb';
+import { uploadReceipt } from '@/lib/googleDrive';
 
 export type SubmitRaffleResult = {
   success: boolean;
@@ -15,10 +14,7 @@ export type SubmitRaffleResult = {
   receiptUrl?: string;
 };
 
-// Server action that registra la participación en Firestore y
-// sube el comprobante a Google Drive usando las credenciales del
-// servicio configuradas en las variables de entorno.
-
+// Server action que registra la participación en MongoDB
 export async function submitRaffleTicket(
   data: RaffleFormValues,
   receipt: File
@@ -57,33 +53,38 @@ export async function submitRaffleTicket(
     );
     const ticketNumber = counter?.value?.ticketCounter || 1;
 
-    // Subir comprobante a Google Drive
-    const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
-    if (!folderId) {
-      throw new Error('GOOGLE_DRIVE_FOLDER_ID not set');
+    // Primero intentamos subir el archivo a Google Drive
+    let driveFileId: string | undefined;
+    let receiptUrl: string | undefined;
+    
+    try {
+      const uploadResult = await uploadReceipt(receipt);
+      driveFileId = uploadResult.fileId ?? undefined;
+      receiptUrl = uploadResult.webViewLink ?? undefined;
+    } catch (uploadError: any) {
+      console.error('Error al subir el comprobante:', uploadError);
+      return { 
+        success: false, 
+        message: uploadError.message || 'Error al subir el comprobante. Por favor, inténtalo de nuevo.'
+      };
     }
-    const buffer = Buffer.from(await receipt.arrayBuffer());
-    const driveRes = await drive.files.create({
-      requestBody: { name: `${ticketNumber}_${receipt.name}`, parents: [folderId] },
-      media: { mimeType: receipt.type, body: Readable.from(buffer) },
-      fields: 'id, webViewLink',
-    });
-    const receiptUrl = driveRes.data.webViewLink || '';
 
-    // Guardar datos en MongoDB
+    // Solo si la subida fue exitosa, guardamos en MongoDB
     const { receipt: _omitReceipt, ...plainData } = validatedData.data;
     await db.collection('raffleTickets').insertOne({
       ...plainData,
       ticketNumber,
-      receiptDriveId: driveRes.data.id,
       receiptName: receipt.name,
       receiptMimeType: receipt.type,
       receiptSize: receipt.size,
-      receiptUrl,
       createdAt: new Date(),
       clientIp,
       pagoVerificado: false,
+      driveFileId,
+      receiptUrl
     });
+
+    // Ya no necesitamos este bloque porque la subida del archivo se maneja antes
 
     // Enviar correo de notificación
     try {
@@ -97,8 +98,8 @@ export async function submitRaffleTicket(
       await sendMail({
         to: plainData.email,
         subject: `¡Registro recibido! Ticket #${ticketNumber} - Rifa Solidaria Living Center Medellín`,
-        html: `<p>¡Gracias por participar en la rifa!</p><p>Tu número único de registro es: <b>${ticketNumber}</b></p><p>Datos registrados:</p>${formHtml}<p>Puedes ver tu comprobante <a href="${receiptUrl}">aquí</a>.</p>`,
-        text: `¡Gracias por participar en la rifa!\nTu número único de registro es: ${ticketNumber}\n\nDatos registrados:\n${Object.entries(plainData).map(([k,v])=>`${k === 'stars' ? 'Participaciones Adquiridas' : k.charAt(0).toUpperCase() + k.slice(1)}: ${v}`).join('\n')}\nComprobante: ${receiptUrl}`,
+        html: `<p>¡Gracias por participar en la rifa!</p><p>Tu número único de registro es: <b>${ticketNumber}</b></p><p>Datos registrados:</p>${formHtml}`,
+        text: `¡Gracias por participar en la rifa!\nTu número único de registro es: ${ticketNumber}\n\nDatos registrados:\n${Object.entries(plainData).map(([k,v])=>`${k === 'stars' ? 'Participaciones Adquiridas' : k.charAt(0).toUpperCase() + k.slice(1)}: ${v}`).join('\n')}`,
       });
     } catch (mailErr) {
       console.error('Error enviando correo de notificación:', mailErr);
@@ -108,7 +109,6 @@ export async function submitRaffleTicket(
       success: true,
       message: '¡Gracias por tu participación! Tu comprobante ha sido enviado.',
       ticketNumber,
-      receiptUrl,
     };
   } catch (error) {
     console.error('Error submitting raffle ticket:', error);
