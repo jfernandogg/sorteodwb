@@ -18,6 +18,8 @@ services:
       - "3000:3000"
     depends_on:
       - mongo
+    env_file:
+      - .env.local
     environment:
       - MONGO_URI=mongodb://mongo:27017/sorteodb
       - PORT=3000
