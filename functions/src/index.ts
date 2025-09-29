@@ -1,19 +1,35 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+import express from "express";
+import {getDatabase} from "../../src/lib/firebaseServer";
+import cors from "cors";
+import {Request, Response} from "express";
 
-// import {onRequest} from "firebase-functions/v2/https";
-// import * as logger from "firebase-functions/logger";
+const app = express();
+const PORT = process.env.PORT || 5001;
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+// Middleware
+app.use(cors());
+app.use(express.json());
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+// Test route
+app.get("/", async (req: Request, res: Response) => {
+  try {
+    const db = await getDatabase();
+    const collections = await db.listCollections().toArray();
+    res.json({
+      status: "API is working",
+      database: "Connected to MongoDB",
+      collections: collections.map(
+        (c) => c.name
+      ),
+    });
+  } catch (error) {
+    console.error("Database connection error:", error);
+    res.status(500).json({error: "Database connection failed"});
+  }
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`MongoDB URI: ${process.env.MONGO_URI || "mongodb://localhost:27017/sorteodb"}`);
+});
