@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useParams } from 'next/navigation';
 import type * as React from 'react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -89,6 +90,8 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
     setIsPaying(false);
   };
 
+  const { locale } = useParams();
+
   const onSubmit = async (values: RaffleFormValues) => {
     setIsSubmitting(true);
     if (!values.receipt) {
@@ -99,7 +102,8 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
 
     const result: SubmitRaffleResult = await submitRaffleTicket(
       values,
-      values.receipt
+      values.receipt,
+      typeof locale === 'string' ? locale : 'es'
     );
 
     if (result.success) {

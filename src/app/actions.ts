@@ -17,7 +17,8 @@ export type SubmitRaffleResult = {
 // Server action que registra la participación en MongoDB
 export async function submitRaffleTicket(
   data: RaffleFormValues,
-  receipt: File
+  receipt: File,
+  locale: string = 'es'
 ): Promise<SubmitRaffleResult> {
   try {
     const db = await getDatabase();
@@ -46,12 +47,28 @@ export async function submitRaffleTicket(
     }
 
     // Generar número de ticket único
+    // Inicializar contador si no existe
+    const counterDoc = {
+      _id: new ObjectId('000000000000000000000001'),
+      initialized: new Date()
+    };
+    
+    // Inicializar contador si no existe e incrementarlo atómicamente
     const counter = await db.collection('meta').findOneAndUpdate(
-      { _id: new ObjectId('000000000000000000000001') },
-      { $inc: { ticketCounter: 1 } },
-      { returnDocument: 'after', upsert: true }
+      { _id: counterDoc._id },
+      { $inc: { ticketCounter: 1 }, $setOnInsert: counterDoc },
+      {
+        upsert: true,
+        returnDocument: 'after'
+      }
     );
-    const ticketNumber = counter?.value?.ticketCounter || 1;
+
+    if (!counter) {
+      throw new Error('Failed to initialize or increment ticket counter');
+    }
+    
+    console.log('Counter document:', JSON.stringify(counter, null, 2));
+    const ticketNumber = counter.ticketCounter;
 
     // Primero intentamos subir el archivo a Google Drive
     let driveFileId: string | undefined;
@@ -88,18 +105,47 @@ export async function submitRaffleTicket(
 
     // Enviar correo de notificación
     try {
+      // Cargar mensajes según el locale
+      const messages = require(`../../messages/${locale}.json`);
+      const raffleMessages = messages.RaffleEmail || {};
+      
       const formHtml = Object.entries(plainData)
         .map(([key, value]) => {
-          const label = key === 'stars' ? 'Participaciones Adquiridas' : key;
-          return `<b>${label.charAt(0).toUpperCase() + label.slice(1)}:</b> ${value}<br>`;
+          const label = raffleMessages[key] || key;
+          return `<tr>
+            <td style="padding: 5px 10px;text-align:left;border-bottom:1px solid #eee"><b>${label}</b></td>
+            <td style="padding: 5px 10px;text-align:left;border-bottom:1px solid #eee">${value}</td>
+          </tr>`;
         })
         .join('');
 
       await sendMail({
         to: plainData.email,
-        subject: `¡Registro recibido! Ticket #${ticketNumber} - Rifa Solidaria Living Center Medellín`,
-        html: `<p>¡Gracias por participar en la rifa!</p><p>Tu número único de registro es: <b>${ticketNumber}</b></p><p>Datos registrados:</p>${formHtml}`,
-        text: `¡Gracias por participar en la rifa!\nTu número único de registro es: ${ticketNumber}\n\nDatos registrados:\n${Object.entries(plainData).map(([k,v])=>`${k === 'stars' ? 'Participaciones Adquiridas' : k.charAt(0).toUpperCase() + k.slice(1)}: ${v}`).join('\n')}`,
+        subject: `${raffleMessages.subject} #${ticketNumber} - ${raffleMessages.eventName}`,
+        html: `
+          <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+            <h2 style="color:#333">${raffleMessages.eventName}</h2>
+            <p>${raffleMessages.thanks}</p>
+            <p>${raffleMessages.yourTicketNumber}: <strong>${ticketNumber}</strong></p>
+            
+            <h3 style="margin-top:20px">${raffleMessages.registeredData}</h3>
+            <table style="width:100%;border-collapse:collapse;margin-top:10px">
+              ${formHtml}
+            </table>
+            
+            <p style="margin-top:20px">¡Mucha suerte!</p>
+          </div>
+        `,
+        text: `
+          ${raffleMessages.eventName}
+          ${raffleMessages.thanks}
+          ${raffleMessages.yourTicketNumber}: ${ticketNumber}
+          
+          ${raffleMessages.registeredData}:
+          ${Object.entries(plainData).map(([k,v]) =>
+            `${raffleMessages[k] || k}: ${v}`
+          ).join('\n')}
+        `,
       });
     } catch (mailErr) {
       console.error('Error enviando correo de notificación:', mailErr);

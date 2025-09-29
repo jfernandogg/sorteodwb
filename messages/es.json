@@ -72,6 +72,18 @@
     "receipt_max_size": "El tamaño máximo del archivo es 5MB.",
     "receipt_invalid_type": "Solo se permiten archivos .jpg, .jpeg, .png, .pdf."
   },
+  "RaffleEmail": {
+    "subject": "Registro recibido",
+    "eventName": "Rifa Solidaria Living Center Medellín",
+    "thanks": "¡Gracias por participar en la rifa!",
+    "yourTicketNumber": "Tu número único de registro es",
+    "registeredData": "Datos registrados",
+    "name": "Nombre",
+    "lastname": "Apellidos",
+    "email": "Correo",
+    "phone": "Teléfono",
+    "stars": "Participaciones adquiridas"
+  },
   "SorteoPage": {
     "title": "¡Sorteo Rifa Solidaria!",
     "description": "Presiona el botón para iniciar el sorteo y descubrir al ganador. ¡Mucha suerte a todos!",

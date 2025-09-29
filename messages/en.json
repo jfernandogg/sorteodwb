@@ -72,6 +72,18 @@
     "receipt_max_size": "Maximum file size is 5MB.",
     "receipt_invalid_type": "Only .jpg, .jpeg, .png, .pdf files are allowed."
   },
+  "RaffleEmail": {
+    "subject": "Registration received",
+    "eventName": "Living Center Medellín Solidarity Raffle",
+    "thanks": "Thank you for participating in the raffle!",
+    "yourTicketNumber": "Your unique registration number is",
+    "registeredData": "Registered data",
+    "name": "Name",
+    "lastname": "Last name",
+    "email": "Email",
+    "phone": "Phone",
+    "stars": "Entries purchased"
+  },
   "SorteoPage": {
     "title": "Solidarity Raffle Draw!",
     "description": "Press the button to start the draw and discover the winner. Good luck to everyone!",
