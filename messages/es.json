@@ -38,7 +38,8 @@
     "validationErrorToastDescription": "Por favor, corrige los campos marcados en rojo antes de proceder al pago.",
     "submitSuccessToastTitle": "¡Participación Exitosa!",
     "submitErrorToastTitle": "Error en la Participación",
-    "paymentInProgress": "Procesando pago..."
+    "paymentInProgress": "Procesando pago...",
+    "conversionNote": "Aproximadamente {usd} USD / {eur} EUR cada participación"
   },
   "HomePage": {
     "pageTitle": "Participa para Ganar una Estadía en el Living Center Medellin por 7 días !!!",

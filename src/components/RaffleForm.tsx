@@ -122,7 +122,7 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
     setIsSubmitting(false);
   };
 
-  const totalFormatted = totalCOP.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 });
+  const totalFormatted = `${totalCOP.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })} COP`;
 
   return (
     <Card className="w-full max-w-lg mx-auto shadow-xl">
@@ -210,6 +210,12 @@ export function RaffleForm({ onSubmitSuccess }: RaffleFormProps) {
             
             <div className="text-center text-2xl font-bold p-4 bg-secondary/50 rounded-md">
               {t('totalLabel')} {totalFormatted}
+            </div>
+            <div className="text-center text-sm text-muted-foreground">
+              {t('conversionNote', {
+                usd: (totalCOP / 4000).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }),
+                eur: (totalCOP / 5000).toLocaleString('en-US', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })
+              })}
             </div>
 
             <FormItem>

@@ -38,7 +38,8 @@
     "validationErrorToastDescription": "Please correct the fields marked in red before proceeding to payment.",
     "submitSuccessToastTitle": "Entry Successful!",
     "submitErrorToastTitle": "Error in Submission",
-    "paymentInProgress": "Processing payment..."
+    "paymentInProgress": "Processing payment...",
+    "conversionNote": "Approximately {usd} USD / {eur} EUR each entry"
   },
   "HomePage": {
     "pageTitle": "Enter to Win a 7-Day Stay at the Living Center Medellin!!!",
