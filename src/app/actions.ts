@@ -5,7 +5,6 @@ import { headers } from 'next/headers';
 import { sendMail } from '@/lib/nodemailer';
 import { getDatabase } from '@/lib/firebaseServer';
 import { ObjectId } from 'mongodb';
-import { uploadReceipt } from '@/lib/googleDrive';
 
 export type SubmitRaffleResult = {
   success: boolean;
@@ -17,7 +16,6 @@ export type SubmitRaffleResult = {
 // Server action que registra la participación en MongoDB
 export async function submitRaffleTicket(
   data: RaffleFormValues,
-  receipt: File,
   locale: string = 'es'
 ): Promise<SubmitRaffleResult> {
   try {
@@ -40,10 +38,9 @@ export async function submitRaffleTicket(
     // Verificar duplicados
     const dup = await db.collection('raffleTickets').findOne({
       email: validatedData.data.email,
-      receiptName: receipt.name,
     });
     if (dup) {
-      return { success: false, message: 'Ya existe una participación con este correo y nombre de comprobante.' };
+      return { success: false, message: 'Ya existe una participación con este correo electrónico.' };
     }
 
     // Generar número de ticket único
@@ -70,35 +67,14 @@ export async function submitRaffleTicket(
     console.log('Counter document:', JSON.stringify(counter, null, 2));
     const ticketNumber = counter.ticketCounter;
 
-    // Primero intentamos subir el archivo a Google Drive
-    let driveFileId: string | undefined;
-    let receiptUrl: string | undefined;
-    
-    try {
-      const uploadResult = await uploadReceipt(receipt);
-      driveFileId = uploadResult.fileId ?? undefined;
-      receiptUrl = uploadResult.webViewLink ?? undefined;
-    } catch (uploadError: any) {
-      console.error('Error al subir el comprobante:', uploadError);
-      return { 
-        success: false, 
-        message: uploadError.message || 'Error al subir el comprobante. Por favor, inténtalo de nuevo.'
-      };
-    }
-
-    // Solo si la subida fue exitosa, guardamos en MongoDB
-    const { receipt: _omitReceipt, ...plainData } = validatedData.data;
+    // Guardamos en MongoDB
+    const plainData = validatedData.data;
     await db.collection('raffleTickets').insertOne({
       ...plainData,
       ticketNumber,
-      receiptName: receipt.name,
-      receiptMimeType: receipt.type,
-      receiptSize: receipt.size,
       createdAt: new Date(),
       clientIp,
-      pagoVerificado: false,
-      driveFileId,
-      receiptUrl
+      pagoVerificado: true, // Marcamos como verificado ya que no hay pago
     });
 
     // Ya no necesitamos este bloque porque la subida del archivo se maneja antes
@@ -153,7 +129,7 @@ export async function submitRaffleTicket(
 
     return {
       success: true,
-      message: '¡Gracias por tu participación! Tu comprobante ha sido enviado.',
+      message: '¡Gracias por tu participación! Tu registro ha sido completado.',
       ticketNumber,
     };
   } catch (error) {

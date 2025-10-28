@@ -4,8 +4,8 @@
 /**
  * Retrieves an environment variable directly from process.env.
  * The calling code should ensure it requests the variable name
- * exactly as it's defined in the environment (e.g., process.env.BOLD_API_KEY).
- * @param key The exact key of the environment variable (e.g., 'BOLD_API_KEY').
+ * exactly as it's defined in the environment.
+ * @param key The exact key of the environment variable.
  * @returns The value of the environment variable, or undefined if not found.
  */
 export function getEnv(key: string): string | undefined {

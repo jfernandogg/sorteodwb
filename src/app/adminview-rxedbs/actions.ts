@@ -11,31 +11,23 @@ interface SerializableTimestamp {
 }
 
 // Define the structure of a raffle entry as it will be passed to the client
-export interface ClientRaffleEntry extends Omit<RaffleFormValues, 'receipt'> {
+export interface ClientRaffleEntry extends RaffleFormValues {
   id: string; // MongoDB document ID
   ticketNumber: number;
-  receiptDriveId?: string;
-  receiptName?: string;
-  receiptMimeType?: string;
-  receiptSize?: number;
-  receiptUrl?: string;
   createdAt: SerializableTimestamp; // Use serializable timestamp
   clientIp?: string;
-  pagoVerificado?: boolean; // Added pagoVerificado
+  pagoVerificado?: boolean; // Always true now, kept for compatibility
+  participaEnSorteo: boolean; // New field for raffle participation status
 }
 
 // Original MongoDB entry structure (used internally in this server action)
-interface MongoRaffleEntry extends Omit<RaffleFormValues, 'receipt'> {
+interface MongoRaffleEntry extends RaffleFormValues {
   id: string;
   ticketNumber: number;
-  receiptDriveId?: string;
-  receiptName?: string;
-  receiptMimeType?: string;
-  receiptSize?: number;
-  receiptUrl?: string;
   createdAt: Date; // MongoDB Date
   clientIp?: string;
-  pagoVerificado?: boolean; // Added pagoVerificado
+  pagoVerificado?: boolean; // Always true now, kept for compatibility
+  participaEnSorteo: boolean; // New field for raffle participation status
 }
 
 interface AuthFetchResult {
@@ -52,7 +44,10 @@ export async function authenticateAndFetchEntries(password: string): Promise<Aut
     return { success: false, message: "Error de configuración del servidor." };
   }
 
-  if (password !== adminPassword) {
+  // Remove quotes if present in the environment variable
+  const cleanAdminPassword = adminPassword.replace(/^["']|["']$/g, '');
+
+  if (password !== cleanAdminPassword) {
     return { success: false, message: "Contraseña incorrecta." };
   }
 
@@ -70,17 +65,13 @@ export async function authenticateAndFetchEntries(password: string): Promise<Aut
         telefono: doc.telefono || '',
         stars: doc.stars || 0,
         ticketNumber: doc.ticketNumber || 0,
-        receiptDriveId: doc.receiptDriveId || '',
-        receiptName: doc.receiptName || '',
-        receiptMimeType: doc.receiptMimeType || '',
-        receiptSize: doc.receiptSize || 0,
-        receiptUrl: doc.receiptUrl || '',
         createdAt: {
           seconds: doc.createdAt?.getTime() / 1000 || 0,
           nanoseconds: 0,
         },
         clientIp: doc.clientIp || '',
-        pagoVerificado: doc.pagoVerificado || false,
+        pagoVerificado: doc.pagoVerificado || true, // Always true now
+        participaEnSorteo: doc.participaEnSorteo ?? true, // Default to true if not set
       };
     });
     return { success: true, entries };
@@ -118,6 +109,39 @@ export async function updatePagoVerificadoStatus(
     return { success: true, message: "Estado de pago verificado actualizado." };
   } catch (error) {
     console.error("Error al actualizar el estado de pago verificado:", error);
+    const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+    return { success: false, message: `Error al actualizar: ${errorMessage}` };
+  }
+}
+
+interface UpdateParticipacionSorteoResult {
+  success: boolean;
+  message?: string;
+}
+
+export async function updateParticipacionSorteo(
+  entryId: string,
+  participaEnSorteo: boolean
+): Promise<UpdateParticipacionSorteoResult> {
+  const adminPassword = process.env.ADMIN_VIEW_PASSWORD;
+  if (!adminPassword) {
+    console.error("ADMIN_VIEW_PASSWORD no está configurado.");
+    return { success: false, message: "Error de configuración del servidor." };
+  }
+
+  if (!entryId) {
+    return { success: false, message: "ID de entrada no proporcionado." };
+  }
+
+  try {
+    const db = await getDatabase();
+    await db.collection('raffleTickets').updateOne(
+      { _id: new ObjectId(entryId) },
+      { $set: { participaEnSorteo: participaEnSorteo } }
+    );
+    return { success: true, message: "Estado de participación en sorteo actualizado." };
+  } catch (error) {
+    console.error("Error al actualizar el estado de participación en sorteo:", error);
     const errorMessage = error instanceof Error ? error.message : "Error desconocido";
     return { success: false, message: `Error al actualizar: ${errorMessage}` };
   }

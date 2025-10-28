@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, AlertTriangle, Eye, CheckCircle2, RefreshCw, Download, ListChecks, ChevronLeft, ChevronRight } from 'lucide-react';
-import { authenticateAndFetchEntries, updatePagoVerificadoStatus, type ClientRaffleEntry } from './actions';
+import { Loader2, AlertTriangle, Eye, CheckCircle2, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { authenticateAndFetchEntries, updateParticipacionSorteo, type ClientRaffleEntry } from './actions';
 import { format } from 'date-fns';
 import Link from 'next/link';
 
@@ -23,7 +23,6 @@ export default function AdminViewPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [entries, setEntries] = useState<ClientRaffleEntry[]>([]);
-  const [updatingStatus, setUpdatingStatus] = useState<Record<string, boolean>>({});
   const [currentPage, setCurrentPage] = useState(1);
 
   const { toast } = useToast();
@@ -53,37 +52,6 @@ export default function AdminViewPage() {
     setIsLoading(false);
   };
 
-  const handlePagoVerificadoChange = async (entryId: string, newStatus: boolean) => {
-    setUpdatingStatus(prev => ({ ...prev, [entryId]: true }));
-    try {
-      const result = await updatePagoVerificadoStatus(entryId, newStatus);
-      if (result.success) {
-        setEntries(prevEntries => 
-          prevEntries.map(entry => 
-            entry.id === entryId ? { ...entry, pagoVerificado: newStatus } : entry
-          )
-        );
-        toast({
-          title: "Actualización Exitosa",
-          description: result.message || "Estado de pago verificado actualizado.",
-          action: <CheckCircle2 className="text-green-500" />,
-        });
-      } else {
-        toast({
-          title: "Error al Actualizar",
-          description: result.message || "No se pudo actualizar el estado.",
-          variant: "destructive",
-        });
-      }
-    } catch (err: any) {
-      toast({
-        title: "Error de Red",
-        description: err instanceof Error ? err.message : "Ocurrió un error de red.",
-        variant: "destructive",
-      });
-    }
-    setUpdatingStatus(prev => ({ ...prev, [entryId]: false }));
-  };
 
   const escapeCsvCell = (cellData: string | number | undefined | null): string => {
     if (cellData === undefined || cellData === null) {
@@ -107,10 +75,10 @@ export default function AdminViewPage() {
     }
 
     const headers = [
-      "Ticket #", "Nombre", "Apellidos", "Email", "Teléfono", 
-      "Participaciones", "Fecha Registro", "Comprobante URL", "IP Cliente", "Pago Verificado"
+      "Ticket #", "Nombre", "Apellidos", "Email", "Teléfono",
+      "Participaciones", "Fecha Registro", "IP Cliente"
     ];
-    
+
     const csvRows = [
       headers.join(','),
       ...dataToExport.map(entry => [
@@ -121,9 +89,7 @@ export default function AdminViewPage() {
         escapeCsvCell(entry.telefono),
         escapeCsvCell(entry.stars),
         escapeCsvCell(entry.createdAt ? format(new Date(entry.createdAt.seconds * 1000 + entry.createdAt.nanoseconds / 1000000), 'yyyy-MM-dd HH:mm:ss') : 'N/A'),
-        escapeCsvCell(entry.receiptUrl),
-        escapeCsvCell(entry.clientIp),
-        escapeCsvCell(entry.pagoVerificado ? 'Sí' : 'No') 
+        escapeCsvCell(entry.clientIp)
       ].join(','))
     ];
     
@@ -142,13 +108,39 @@ export default function AdminViewPage() {
     }
   };
 
-  const handleDownloadVerified = () => {
-    const verifiedEntries = entries.filter(entry => entry.pagoVerificado);
-    generateCsv(verifiedEntries, "participaciones_verificadas.csv");
-  };
-
   const handleDownloadAll = () => {
     generateCsv(entries, "todas_las_participaciones.csv");
+  };
+
+  const handleToggleParticipacion = async (entryId: string, currentValue: boolean) => {
+    const newValue = !currentValue;
+    try {
+      const result = await updateParticipacionSorteo(entryId, newValue);
+      if (result.success) {
+        // Update local state
+        setEntries(prevEntries =>
+          prevEntries.map(entry =>
+            entry.id === entryId ? { ...entry, participaEnSorteo: newValue } : entry
+          )
+        );
+        toast({
+          title: "Estado actualizado",
+          description: `Participación en sorteo ${newValue ? 'activada' : 'desactivada'}.`,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "Error al actualizar el estado.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al actualizar el estado de participación.",
+        variant: "destructive",
+      });
+    }
   };
 
   const paginatedEntries = useMemo(() => {
@@ -201,7 +193,6 @@ export default function AdminViewPage() {
     );
   }
 
-  const verifiedCount = entries.filter(entry => entry.pagoVerificado).length;
   const totalCount = entries.length;
 
   return (
@@ -209,17 +200,8 @@ export default function AdminViewPage() {
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <h1 className="text-3xl font-bold text-primary text-center sm:text-left">Participaciones de la Rifa</h1>
         <div className="flex flex-col sm:flex-row flex-wrap gap-2 items-center justify-center sm:justify-end">
-          <Button 
-            variant="secondary" 
-            onClick={handleDownloadVerified}
-            disabled={verifiedCount === 0}
-            className="w-full sm:w-auto"
-          >
-            <ListChecks className="mr-2 h-4 w-4" />
-            Descargar Verificados ({verifiedCount})
-          </Button>
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             onClick={handleDownloadAll}
             disabled={totalCount === 0}
             className="w-full sm:w-auto"
@@ -259,8 +241,7 @@ export default function AdminViewPage() {
                       <TableHead>Teléfono</TableHead>
                       <TableHead className="text-center">Particip.</TableHead>
                       <TableHead>Fecha Registro</TableHead>
-                      <TableHead className="text-center">Comprobante</TableHead>
-                      <TableHead className="text-center w-[150px]">Pago Verificado</TableHead> 
+                      <TableHead className="text-center">Estado</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -275,29 +256,11 @@ export default function AdminViewPage() {
                           {entry.createdAt ? format(new Date(entry.createdAt.seconds * 1000 + entry.createdAt.nanoseconds / 1000000), 'dd/MM/yyyy HH:mm') : 'N/A'}
                         </TableCell>
                         <TableCell className="text-center">
-                          {entry.receiptUrl ? (
-                            <Button variant="link" asChild size="sm" className="p-0 h-auto">
-                              <Link href={entry.receiptUrl} target="_blank" rel="noopener noreferrer">
-                                Ver
-                              </Link>
-                            </Button>
-                          ) : (
-                            'N/A'
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {updatingStatus[entry.id] ? (
-                            <RefreshCw className="h-5 w-5 animate-spin mx-auto text-primary" />
-                          ) : (
-                            <Checkbox
-                              id={`pagoVerificado-${entry.id}`}
-                              checked={!!entry.pagoVerificado}
-                              onCheckedChange={(checked) => {
-                                handlePagoVerificadoChange(entry.id, Boolean(checked));
-                              }}
-                              aria-label={`Marcar pago como verificado para ticket ${entry.ticketNumber}`}
-                            />
-                          )}
+                          <Switch
+                            checked={entry.participaEnSorteo}
+                            onCheckedChange={() => handleToggleParticipacion(entry.id, entry.participaEnSorteo)}
+                            aria-label={`Toggle participación para ${entry.nombre} ${entry.apellidos}`}
+                          />
                         </TableCell>
                       </TableRow>
                     ))}
