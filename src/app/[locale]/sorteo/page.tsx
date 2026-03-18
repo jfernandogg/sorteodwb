@@ -9,8 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, PlayCircle, Trophy, AlertTriangle, SmilePlus, UserCheck, ListChecks, Eye, EyeOff } from 'lucide-react';
 import { fetchVerifiedParticipantsForSorteo, type VerifiedParticipant } from './actions';
 import AppFooter from '@/components/AppFooter';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useTranslations } from 'next-intl';
+import { ScrollArea } from '@/components/ui/scroll-area'; // Import ScrollArea
 
 // Helper function to shuffle an array
 function shuffleArray<T>(array: T[]): T[] {
@@ -23,7 +22,6 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export default function SorteoPage() {
-  const t = useTranslations('SorteoPage');
   const [expandedNameList, setExpandedNameList] = useState<string[]>([]);
   const [currentDisplayName, setCurrentDisplayName] = useState("...");
   const [isSpinning, setIsSpinning] = useState(false);
@@ -31,7 +29,7 @@ export default function SorteoPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uniqueParticipantCount, setUniqueParticipantCount] = useState(0);
-  const [showParticipantList, setShowParticipantList] = useState(false); 
+  const [showParticipantList, setShowParticipantList] = useState(false); // New state
 
   const intervalIdRef = useRef<NodeJS.Timeout | null>(null); 
   const animationFrameIdRef = useRef<number | null>(null);
@@ -39,36 +37,46 @@ export default function SorteoPage() {
   useEffect(() => {
     async function loadParticipants() {
       setIsLoading(true);
+      // Pequeño log en cliente para verificar que el componente se monta
+      console.log("SorteoPage: Solicitando participantes...");
       setError(null);
-      const result = await fetchVerifiedParticipantsForSorteo();
-      if (result.success && result.participants) {
-        if (result.participants.length === 0) {
-          setError(t('noParticipantsError'));
-          setExpandedNameList([]);
-          setCurrentDisplayName(t('na'));
-          setUniqueParticipantCount(0);
-        } else {
-          const names: string[] = [];
-          const uniqueNames = new Set<string>();
+      
+      try {
+        const result = await fetchVerifiedParticipantsForSorteo();
+        if (result.success && result.participants) {
+          if (result.participants.length === 0) {
+            setError("No hay participantes verificados para realizar el sorteo.");
+            setExpandedNameList([]);
+            setCurrentDisplayName("N/A");
+            setUniqueParticipantCount(0);
+          } else {
+            const names: string[] = [];
+            const uniqueParticipants = new Set<string>();
 
-          result.participants.forEach(p => {
-            const fullName = `${p.nombre} ${p.apellidos}`;
-            uniqueNames.add(fullName);
-            for (let i = 0; i < p.stars; i++) {
-              names.push(fullName);
-            }
-          });
-          const shuffledNames = shuffleArray(names);
-          setExpandedNameList(shuffledNames);
-          setCurrentDisplayName("..."); 
-          setUniqueParticipantCount(uniqueNames.size);
+            result.participants.forEach(p => {
+              const fullName = `${p.nombre} ${p.apellidos}`;
+              uniqueParticipants.add(p.email || p.id); // Contar por email o ID para evitar fusionar personas con el mismo nombre
+              for (let i = 0; i < p.stars; i++) {
+                names.push(fullName);
+              }
+            });
+            const shuffledNames = shuffleArray(names);
+            setExpandedNameList(shuffledNames);
+            setCurrentDisplayName("..."); 
+            setUniqueParticipantCount(uniqueParticipants.size);
+          }
+        } else {
+          setError(result.message || "Error cargando participantes.");
+          setCurrentDisplayName("Error");
+          setUniqueParticipantCount(0);
         }
-      } else {
-        setError(result.message || t('loadingError'));
-        setCurrentDisplayName(t('error'));
+      } catch (err) {
+        console.error("Error no manejado en petición:", err);
+        setError("Error de red: La acción del servidor falló. Revisa los logs de Docker.");
         setUniqueParticipantCount(0);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }
     loadParticipants();
 
@@ -76,7 +84,6 @@ export default function SorteoPage() {
       if (intervalIdRef.current) clearInterval(intervalIdRef.current);
       if (animationFrameIdRef.current) cancelAnimationFrame(animationFrameIdRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const spinDurationBase = 3000; 
@@ -87,7 +94,7 @@ export default function SorteoPage() {
 
     setIsSpinning(true);
     setWinner(null);
-    setCurrentDisplayName(t('spinning'));
+    setCurrentDisplayName("Girando..."); 
 
     let currentIndex = 0;
     const startTime = Date.now();
@@ -99,6 +106,7 @@ export default function SorteoPage() {
         currentIndex++;
         animationFrameIdRef.current = requestAnimationFrame(animate);
       } else {
+        // Stop spinning and select winner
         if (animationFrameIdRef.current) cancelAnimationFrame(animationFrameIdRef.current);
         const randomIndex = Math.floor(Math.random() * expandedNameList.length);
         const finalWinner = expandedNameList[randomIndex];
@@ -116,11 +124,12 @@ export default function SorteoPage() {
     }, 50); 
   };
 
+
   if (isLoading) {
     return (
       <main className="flex flex-col items-center justify-center min-h-screen p-4 bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="text-lg text-muted-foreground">{t('loadingParticipants')}</p>
+        <p className="text-lg text-muted-foreground">Cargando participantes...</p>
       </main>
     );
   }
@@ -130,17 +139,17 @@ export default function SorteoPage() {
       <Card className="w-full max-w-2xl shadow-xl text-center">
         <CardHeader>
           <CardTitle className="text-3xl sm:text-4xl font-bold text-primary">
-            {t('title')}
+            ¡Sorteo Rifa Solidaria!
           </CardTitle>
           <CardDescription className="text-md sm:text-lg text-muted-foreground pt-2">
-            {t('description')}
+            Presiona el botón para iniciar el sorteo y descubrir al ganador. ¡Mucha suerte a todos!
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
           {error && !isLoading && (
             <Alert variant="destructive" className="text-left">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>{t('errorTitle')}</AlertTitle>
+              <AlertTitle>Error</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
@@ -167,14 +176,14 @@ export default function SorteoPage() {
             ) : (
               <SmilePlus className="mr-2 h-6 w-6" />
             )}
-            {isSpinning ? t('spinningButton') : winner ? t('spinAgainButton') : t('spinButton')}
+            {isSpinning ? 'Sorteando...' : winner ? 'Sortear de Nuevo' : '¡Realizar Sorteo!'}
           </Button>
 
           {winner && !isSpinning && (
             <div className="mt-8 p-6 bg-green-50 border-2 border-green-400 rounded-lg shadow-md animate-in fade-in-50 zoom-in-90 duration-500">
               <div className="flex flex-col items-center">
                 <Trophy className="h-16 w-16 text-yellow-500 mb-4" />
-                <p className="text-xl sm:text-2xl font-semibold text-green-700">{t('congratsWinner')}</p>
+                <p className="text-xl sm:text-2xl font-semibold text-green-700">¡Felicidades al Ganador!</p>
                 <p className="text-3xl sm:text-4xl font-bold text-primary mt-2">{winner}</p>
               </div>
             </div>
@@ -184,11 +193,11 @@ export default function SorteoPage() {
             <div className="pt-4 space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center justify-center">
                 <UserCheck className="inline mr-2 h-5 w-5" />
-                {t('totalUniqueParticipants', {count: uniqueParticipantCount})}
+                Total de participantes únicos: {uniqueParticipantCount}
               </div>
               <div className="flex items-center justify-center">
                 <ListChecks className="inline mr-2 h-5 w-5" />
-                {t('totalEntries', {count: expandedNameList.length})}
+                Total de participaciones en el sorteo: {expandedNameList.length}
               </div>
               <div className="mt-4 text-center">
                 <Button 
@@ -197,7 +206,7 @@ export default function SorteoPage() {
                   onClick={() => setShowParticipantList(!showParticipantList)}
                 >
                   {showParticipantList ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
-                  {showParticipantList ? t('hideListButton') : t('showListButton')}
+                  {showParticipantList ? 'Ocultar Lista de Participantes' : 'Ver Lista de Participantes del Sorteo'}
                 </Button>
               </div>
             </div>
@@ -206,8 +215,8 @@ export default function SorteoPage() {
           {showParticipantList && expandedNameList.length > 0 && (
             <Card className="mt-6 text-left">
               <CardHeader>
-                <CardTitle className="text-lg">{t('listTitle')}</CardTitle>
-                <CardDescription>{t('listDescription')}</CardDescription>
+                <CardTitle className="text-lg">Lista Completa de Participaciones para el Sorteo</CardTitle>
+                <CardDescription>Cada nombre aparece según el número de participaciones compradas.</CardDescription>
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-60 w-full rounded-md border p-2">

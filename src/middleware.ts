@@ -22,7 +22,11 @@ export function middleware(request: NextRequest) {
 export const config = {
   // Match only internationalized pathnames
   matcher: [
-    '/', // Match the root
-    '/((?!api|_next|_vercel|adminview-rxedbs|.*\\..*).*)'
+    // Match all pathnames except for
+    // - API routes
+    // - Static files (_next, images, favicon, etc.)
+    '/((?!api|_next|_vercel|adminview-rxedbs|[\\w-]+\\.\\w+).*)',
+    // Match the root
+    '/'
   ]
 };

@@ -1,6 +1,8 @@
 "use server";
 
 import { ObjectId } from 'mongodb';
+import { cookies } from 'next/headers';
+import { revalidatePath } from 'next/cache';
 import { getDatabase } from '@/lib/firebaseServer';
 import type { RaffleFormValues } from '@/schemas';
 
@@ -36,6 +38,13 @@ interface AuthFetchResult {
   message?: string;
 }
 
+async function verifyAdminAuth(): Promise<boolean> {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get('admin_session')?.value;
+  const adminPassword = process.env.ADMIN_VIEW_PASSWORD?.replace(/^["']|["']$/g, '');
+  return !!adminPassword && sessionToken === adminPassword;
+}
+
 export async function authenticateAndFetchEntries(password: string): Promise<AuthFetchResult> {
   const adminPassword = process.env.ADMIN_VIEW_PASSWORD;
 
@@ -50,6 +59,15 @@ export async function authenticateAndFetchEntries(password: string): Promise<Aut
   if (password !== cleanAdminPassword) {
     return { success: false, message: "Contraseña incorrecta." };
   }
+
+  // Establecer cookie de sesión segura para subsiguientes Server Actions
+  const cookieStore = await cookies();
+  cookieStore.set('admin_session', cleanAdminPassword, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 3600 // 1 hora
+  });
 
   try {
     const db = await getDatabase();
@@ -66,11 +84,11 @@ export async function authenticateAndFetchEntries(password: string): Promise<Aut
         stars: doc.stars || 0,
         ticketNumber: doc.ticketNumber || 0,
         createdAt: {
-          seconds: doc.createdAt?.getTime() / 1000 || 0,
+          seconds: doc.createdAt instanceof Date ? doc.createdAt.getTime() / 1000 : 0,
           nanoseconds: 0,
         },
         clientIp: doc.clientIp || '',
-        pagoVerificado: doc.pagoVerificado || true, // Always true now
+        pagoVerificado: doc.pagoVerificado ?? true, 
         participaEnSorteo: doc.participaEnSorteo ?? true, // Default to true if not set
       };
     });
@@ -90,10 +108,10 @@ export async function updatePagoVerificadoStatus(
   entryId: string,
   pagoVerificado: boolean
 ): Promise<UpdatePagoVerificadoResult> {
-  const adminPassword = process.env.ADMIN_VIEW_PASSWORD;
-  if (!adminPassword) {
-    console.error("ADMIN_VIEW_PASSWORD no está configurado.");
-    return { success: false, message: "Error de configuración del servidor." };
+  // Verificar autenticación mediante cookie antes de proceder
+  const isAuthenticated = await verifyAdminAuth();
+  if (!isAuthenticated) {
+    return { success: false, message: "No autorizado." };
   }
 
   if (!entryId) {
@@ -106,6 +124,11 @@ export async function updatePagoVerificadoStatus(
       { _id: new ObjectId(entryId) },
       { $set: { pagoVerificado: pagoVerificado } }
     );
+
+    // Forzar la actualización de la caché en las rutas relevantes
+    revalidatePath('/adminview-rxedbs');
+    // Usamos revalidatePath('/', 'layout') para limpiar la caché de todas las versiones localizadas
+    revalidatePath('/', 'layout');
     return { success: true, message: "Estado de pago verificado actualizado." };
   } catch (error) {
     console.error("Error al actualizar el estado de pago verificado:", error);
@@ -123,10 +146,10 @@ export async function updateParticipacionSorteo(
   entryId: string,
   participaEnSorteo: boolean
 ): Promise<UpdateParticipacionSorteoResult> {
-  const adminPassword = process.env.ADMIN_VIEW_PASSWORD;
-  if (!adminPassword) {
-    console.error("ADMIN_VIEW_PASSWORD no está configurado.");
-    return { success: false, message: "Error de configuración del servidor." };
+  // Verificar autenticación mediante cookie antes de proceder
+  const isAuthenticated = await verifyAdminAuth();
+  if (!isAuthenticated) {
+    return { success: false, message: "No autorizado." };
   }
 
   if (!entryId) {
@@ -135,10 +158,16 @@ export async function updateParticipacionSorteo(
 
   try {
     const db = await getDatabase();
-    await db.collection('raffleTickets').updateOne(
+    const result = await db.collection('raffleTickets').updateOne(
       { _id: new ObjectId(entryId) },
       { $set: { participaEnSorteo: participaEnSorteo } }
     );
+    console.log(`[Admin Debug] Update participacion ID ${entryId}: ${result.modifiedCount} documentos modificados.`);
+
+    // Forzar la actualización de la caché en las rutas relevantes
+    revalidatePath('/adminview-rxedbs');
+    // Limpia la caché global para que /es/sorteo y otras rutas vean los cambios inmediatamente
+    revalidatePath('/', 'layout');
     return { success: true, message: "Estado de participación en sorteo actualizado." };
   } catch (error) {
     console.error("Error al actualizar el estado de participación en sorteo:", error);
